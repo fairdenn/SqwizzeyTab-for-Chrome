@@ -1,5 +1,6 @@
 
 let state = null;
+let appReady = false; // true после завершения init() — до этого live onChanged не вмешивается
 let editPageId = null;
 let editBoardId = null;
 let pendingWallpaperDataUrl = null;
@@ -342,6 +343,7 @@ async function init() {
   bindEvents();
   preloadFaviconsOnce();
   renderAll();
+  appReady = true; // инициализация завершена — live onChanged теперь может применять удалённые изменения
   await maybeOpenImportOnboarding();
 }
 
@@ -1713,6 +1715,22 @@ async function importSelectedBookmarkFolders(event) {
   }
 
   selected.forEach(folder => {
+    // Дедуп: при повторном импорте дополняем существующую доску, а не плодим дубль.
+    const existing = folder.external
+      ? page.boards.find(b => b.external && b.title === folder.title)
+      : page.boards.find(b => b.bookmarkFolderId === folder.id);
+
+    if (existing) {
+      const urls = new Set(existing.links.map(l => l.url));
+      folder.links.forEach(link => {
+        if (!urls.has(link.url)) {
+          existing.links.push({ id: uid("link"), title: link.title, url: link.url });
+          urls.add(link.url);
+        }
+      });
+      return;
+    }
+
     const board = {
       id: uid("board"),
       title: folder.title,
@@ -1722,8 +1740,9 @@ async function importSelectedBookmarkFolders(event) {
         url: link.url
       }))
     };
-    // Доски из файла другого браузера не привязываем к папке Chrome (id синтетический).
-    if (!folder.external) board.bookmarkFolderId = folder.id;
+    // Доски из файла другого браузера помечаем external и НЕ привязываем к папке Chrome.
+    if (folder.external) board.external = true;
+    else board.bookmarkFolderId = folder.id;
     page.boards.push(board);
   });
 
@@ -1750,6 +1769,11 @@ async function handleBookmarkFileImport(event) {
   if (!file) return;
 
   const isEn = state.settings.language === "en";
+
+  const MAX_BYTES = 12 * 1024 * 1024; // 12 МБ — реальные экспорты закладок столько не весят
+  if (file.size > MAX_BYTES) {
+    return toast(isEn ? "File is too large for a bookmarks export." : "Файл слишком большой для экспорта закладок.");
+  }
 
   let text = "";
   try { text = await file.text(); }
@@ -2990,7 +3014,8 @@ function findBoardForFolderGlobal(folderId, folderTitle) {
   }
   if (folderTitle) {
     for (const page of state.pages) {
-      const byTitle = page.boards.find(b => !b.bookmarkFolderId && b.title === folderTitle);
+      // !b.external — доски, импортированные из файла другого браузера, не привязываем к папкам Chrome по совпадению имени.
+      const byTitle = page.boards.find(b => !b.bookmarkFolderId && !b.external && b.title === folderTitle);
       if (byTitle) {
         byTitle.bookmarkFolderId = folderId; // запоминаем привязку на будущее
         return { board: byTitle, page };
@@ -3005,7 +3030,7 @@ function findBoardForFolder(page, folderId, folderTitle) {
   let board = page.boards.find(b => b.bookmarkFolderId === folderId);
   if (board) return board;
   if (folderTitle) {
-    board = page.boards.find(b => !b.bookmarkFolderId && b.title === folderTitle);
+    board = page.boards.find(b => !b.bookmarkFolderId && !b.external && b.title === folderTitle);
     if (board) {
       board.bookmarkFolderId = folderId;
       return board;
@@ -3026,9 +3051,11 @@ async function syncBookmarksToBoards(opts = {}) {
   catch (e) { console.warn("bookmark sync: cannot read folders", e); return; }
 
   let newBoardCreated = false;
+  let bindingLearned = false;
   const changedBoardIds = new Set();
 
   folders.forEach(folder => {
+    const hadBindingBefore = state.pages.some(p => p.boards.some(b => b.bookmarkFolderId === folder.id));
     const match = findBoardForFolderGlobal(folder.id, folder.title);
     let board = match?.board || null;
 
@@ -3044,6 +3071,9 @@ async function syncBookmarksToBoards(opts = {}) {
     }
     if (!board) return;
 
+    // findBoardForFolderGlobal мог выучить привязку по названию — её нужно сохранить.
+    if (!hadBindingBefore && board.bookmarkFolderId === folder.id) bindingLearned = true;
+
     const existingUrls = new Set(board.links.map(l => l.url));
     folder.links.forEach(link => {
       if (!existingUrls.has(link.url)) {
@@ -3054,7 +3084,7 @@ async function syncBookmarksToBoards(opts = {}) {
     });
   });
 
-  if (newBoardCreated || changedBoardIds.size) {
+  if (newBoardCreated || changedBoardIds.size || bindingLearned) {
     await persist();
     // Новая доска → полный рендер. Иначе точечно обновляем изменённые доски
     // (refreshBoardLinks тихо пропустит доски не на активной странице).
@@ -3174,18 +3204,23 @@ window.addEventListener("focus", scheduleBookmarkResync);
 // === LIVE SYNC: подхватываем изменения с другого устройства (через Google-аккаунт) ===
 if (typeof chrome !== "undefined" && chrome?.storage?.onChanged) {
   let _applyingRemote = false;
-  chrome.storage.onChanged.addListener(async (changes, area) => {
-    if (area !== "sync" || !changes[META_KEY]) return;
-    const incoming = changes[META_KEY].newValue;
-    if (!incoming || !incoming.updatedAt) return;
+  let _pendingRemote = false;
+
+  async function applyRemoteIfNewer() {
     if (_applyingRemote) return;
-    if (incoming.updatedAt <= (state?.updatedAt || 0)) return; // наша же запись или старее
+    // Не рвём активный drag полным ре-рендером — отложим до dragend.
+    if (draggedBoardId || draggedLinkContext) { _pendingRemote = true; return; }
 
     _applyingRemote = true;
     try {
       const fresh = await syncStore.get();
-      if (fresh && (fresh.updatedAt || 0) > (state?.updatedAt || 0)) {
+      const ourClock = Math.max(state?.updatedAt || 0, lastWrittenUpdatedAt());
+      if (fresh && (fresh.updatedAt || 0) > ourClock) {
+        const rememberedPage = state?.activePageId;
         state = migrateState(fresh);
+        if (rememberedPage && state.pages.some(p => p.id === rememberedPage)) {
+          state.activePageId = rememberedPage; // не перепрыгиваем на другую страницу при синке
+        }
         ensureActivePage();
         ensureValidWallpaper();
         await applySettings();
@@ -3198,7 +3233,22 @@ if (typeof chrome !== "undefined" && chrome?.storage?.onChanged) {
     } finally {
       _applyingRemote = false;
     }
+  }
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "sync" || !changes[META_KEY]) return;
+    if (!appReady) return; // не вмешиваемся в инициализацию
+    const incoming = changes[META_KEY].newValue;
+    if (!incoming || !incoming.updatedAt) return;
+    // Подавляем эхо собственной записи: incoming не новее нашего последнего сохранения.
+    if (incoming.updatedAt <= Math.max(state?.updatedAt || 0, lastWrittenUpdatedAt())) return;
+    applyRemoteIfNewer();
   });
+
+  // Дотягиваем отложенное удалённое изменение после завершения перетаскивания.
+  window.addEventListener("dragend", () => {
+    if (_pendingRemote) { _pendingRemote = false; applyRemoteIfNewer(); }
+  }, true);
 }
 
 // Дослать отложенную sync-запись перед скрытием/закрытием вкладки.

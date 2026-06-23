@@ -310,6 +310,7 @@ const syncStatus = {
 
 let _syncWriteTimer = null;
 let _pendingSyncState = null;
+let _lastWrittenUpdatedAt = 0; // таймстемп последней СВОЕЙ записи — чтобы live onChanged не принимал её за чужую
 
 function scheduleSyncWrite(safeState) {
   _pendingSyncState = safeState;
@@ -369,7 +370,12 @@ const syncStore = {
   },
 
   async set(state) {
-    const safeState = JSON.parse(JSON.stringify({ ...state, updatedAt: Date.now() }));
+    const ts = Date.now();
+    const safeState = JSON.parse(JSON.stringify({ ...state, updatedAt: ts }));
+    // Синхронизируем in-memory updatedAt с записанным значением: иначе live onChanged
+    // принимает нашу же отложенную sync-запись за изменение с другого устройства.
+    try { if (state && typeof state === "object") state.updatedAt = ts; } catch {}
+    _lastWrittenUpdatedAt = ts;
     // 1) Немедленно и надёжно в local (без квоты sync, без rate-limit).
     try {
       await chrome.storage.local.set({ [LOCAL_STATE_PRIMARY_KEY]: safeState });
@@ -379,7 +385,7 @@ const syncStore = {
     }
     // 2) В sync (между устройствами через Google-аккаунт) — отложенно, чтобы не упереться в лимиты.
     scheduleSyncWrite(safeState);
-    return true;
+    return ts;
   },
 
   // Принудительно дослать отложенную запись в sync (перед скрытием/закрытием вкладки).
@@ -388,6 +394,9 @@ const syncStore = {
     await flushSyncWrite();
   }
 };
+
+// Таймстемп последней записи этой вкладки — для подавления эха в live onChanged.
+function lastWrittenUpdatedAt() { return _lastWrittenUpdatedAt; }
 
 async function getLocalWallpaper() {
   const obj = await chrome.storage.local.get(LOCAL_WALLPAPER_KEY);
@@ -562,7 +571,9 @@ function decodeEntities(text) {
 // чтобы переиспользовать UI выбора. Чистые строки (без DOMParser) — работает и вне браузера.
 function parseNetscapeBookmarks(html) {
   const text = String(html || "");
-  const tokenRe = /<\s*DL\s*>|<\/\s*DL\s*>|<\s*H3[^>]*>([\s\S]*?)<\/\s*H3\s*>|<\s*A\s+[^>]*?HREF\s*=\s*"([^"]*)"[^>]*>([\s\S]*?)<\/\s*A\s*>/gi;
+  // Классы символов ограничены ([^<], [^"<>]), чтобы битый ввод (незакрытая кавычка/тег)
+  // не вызывал катастрофический бэктрекинг и не «съедал» соседние закладки.
+  const tokenRe = /<\s*DL\s*>|<\/\s*DL\s*>|<\s*H3[^>]*>([^<]{0,1024})<\/\s*H3\s*>|<\s*A\s+[^>]*?HREF\s*=\s*"([^"<>\r\n]{0,4096})"[^>]*>([^<]{0,4096})<\/\s*A\s*>/gi;
 
   const folders = [];
   const stack = [];
@@ -612,7 +623,7 @@ function parseNetscapeBookmarks(html) {
       pendingName = m[1]; // <H3> — имя следующей папки
     } else if (m[2] !== undefined) {
       const url = decodeEntities(m[2]).trim();
-      if (!/^(https?:|ftp:|file:)/i.test(url)) continue; // пропускаем javascript:/place:/data:/пустые
+      if (!/^(https?:|ftp:)/i.test(url)) continue; // только http/https/ftp; режем javascript:/place:/data:/file:/пустые
       const title = decodeEntities(m[3]).replace(/<[^>]+>/g, "").trim() || url;
       const top = stack[stack.length - 1];
       if (top) top.links.push({ title, url });
