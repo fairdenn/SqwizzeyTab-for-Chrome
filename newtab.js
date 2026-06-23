@@ -2888,19 +2888,30 @@ appendBoardLayoutItem = function(layout, node, index) {
   // Explicit-column: раскладываем доску в её сохранённую колонку board.col.
   // Это держит раскладку стабильной между reload (косяк 1: round-robin рендер
   // не совпадал с column-major чтением и сбрасывал расстановку).
-  // Миграция: у старых досок col нет — назначаем round-robin по индексу,
-  // чтобы первый рендер совпал с прежним визуалом, дальше col фиксируется.
+  const ncols = layout.columns.length;
+  const leastFilledCol = () => {
+    const counts = layout.columns.map(c => c.querySelectorAll(":scope > .board").length);
+    return counts.indexOf(Math.min(...counts));
+  };
+  const q = (el.searchInput && el.searchInput.value.trim()) || "";
   const id = node.dataset && node.dataset.boardId;
   let col;
-  if (id) {
+  if (q || !id) {
+    // Поиск — временный вид (не перестановка): раскладываем компактно слева,
+    // игнорируя сохранённый col, иначе доски «уезжают» в свои колонки и пустые
+    // колонки слева выглядят как сломанная раскладка. (+ невидимый add-zone div.)
+    col = index % ncols;
+  } else {
     let board = null;
     try { board = activePage().boards.find(b => b.id === id); } catch {}
-    col = board && Number.isInteger(board.col)
-      ? Math.min(layout.columns.length - 1, Math.max(0, board.col))
-      : (index % layout.columns.length);
-  } else {
-    // невидимый add-zone div (createAddBoardZone) — позиция не важна
-    col = index % layout.columns.length;
+    if (board && Number.isInteger(board.col)) {
+      col = Math.min(ncols - 1, Math.max(0, board.col));
+    } else {
+      // Немигрированная доска (нет col — напр. из Chrome-sync / «сохранить окно»):
+      // кладём в наименее заполненную колонку, а не вслепую index%ncols, чтобы не
+      // громоздить стопку поверх explicit-col досок. col зафиксируется при первом drag.
+      col = leastFilledCol();
+    }
   }
   layout.columns[col].appendChild(node);
 };
@@ -3011,19 +3022,27 @@ function clearActiveGaps(except) {
 
 // Читает порядок из DOM и сохраняет в state
 async function readAndSaveBoardOrder() {
+  // При активном поиске DOM показывает лишь подмножество досок — не трогаем ни
+  // порядок, ни колонки, иначе col проставятся по индексам в урезанном DOM и
+  // раскладка испортится (регрессия идемпотентности косяка 1 под фильтром).
+  if (el.searchInput && el.searchInput.value.trim()) return;
+
   const page = activePage();
   const newOrder = [];
+  const colByBoard = new Map();
   document.querySelectorAll(".board-column").forEach((col, colIndex) => {
-    col.querySelectorAll(":scope > .board[data-board-id]").forEach(el => {
-      const b = page.boards.find(x => x.id === el.dataset.boardId);
+    col.querySelectorAll(":scope > .board[data-board-id]").forEach(node => {
+      const b = page.boards.find(x => x.id === node.dataset.boardId);
       if (b && !newOrder.includes(b)) {
-        // Фиксируем колонку доски явно (косяк 1) — рендер читает её из board.col
-        b.col = colIndex;
+        colByBoard.set(b, colIndex);
         newOrder.push(b);
       }
     });
   });
+  // Колонки фиксируем ТОЛЬКО когда в DOM ровно все доски (полный, нефильтрованный
+  // снимок) — иначе мутация b.col произошла бы даже при сорванном guard'е.
   if (newOrder.length === page.boards.length) {
+    newOrder.forEach(b => { b.col = colByBoard.get(b); });
     page.boards = newOrder;
     await persist();
   }
