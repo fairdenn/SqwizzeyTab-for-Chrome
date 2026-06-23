@@ -16716,6 +16716,17 @@ body.light .context-menu.context-menu {
   align-items: center !important;
   justify-content: center !important;
   line-height: 1 !important;
-  padding-block: 0 3px !important;
+  padding-block: 0 !important;
+  /* Убираем backdrop-filter: при непрозрачном фоне он бесполезен, но по краям
+     скругления протекает и размывает подложку (белый wrap в светлой теме) —
+     это и давало светлую кайму («белые края»). Артефакт виден только в реальном
+     GPU-композите (headful), не в headless. */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Текст вкладки сидел чуть ниже центра — поднимаем ровно на 2px. */
+.page-pill.page-pill .page-title {
+  transform: translateY(-2px) !important;
+  display: inline-block !important;
 }
 
