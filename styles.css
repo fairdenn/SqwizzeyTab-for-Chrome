@@ -16789,3 +16789,22 @@ body.light .context-menu.context-menu {
   height: 36px !important;
 }
 
+
+/* ====================================================
+   SQWIZZEY THIN SCROLLBAR v2.9.90
+   Нативные широкие скроллбары не вписаны в тему. Делаем тонкие под тему.
+   ==================================================== */
+*::-webkit-scrollbar { width: 9px !important; height: 9px !important; }
+*::-webkit-scrollbar-track { background: transparent !important; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .16) !important;
+  border-radius: 8px !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .28) !important; }
+*::-webkit-scrollbar-corner { background: transparent !important; }
+body.light *::-webkit-scrollbar-thumb { background: rgba(18, 24, 26, .22) !important; background-clip: padding-box !important; }
+body.light *::-webkit-scrollbar-thumb:hover { background: rgba(18, 24, 26, .34) !important; }
+* { scrollbar-width: thin !important; scrollbar-color: rgba(255,255,255,.18) transparent !important; }
+body.light * { scrollbar-color: rgba(18,24,26,.24) transparent !important; }
