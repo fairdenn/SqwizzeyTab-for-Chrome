@@ -611,10 +611,19 @@ async function applySettings() {
   document.documentElement.style.setProperty("--secondary", secondary);
   document.documentElement.style.setProperty("--secondary-text", secondaryText);
   document.documentElement.style.setProperty("--board-rgb", hexToRgbString(boardColor));
-  const isStarterWallpaper = settings.wallpaperType === "starter" || (!settings.wallpaperType && !settings.wallpaper && !settings.activeUserWallpaperId);
-  const effectiveBoardOpacity = isStarterWallpaper ? 10 : (settings.boardOpacity ?? 10);
-  document.documentElement.style.setProperty("--board-opacity", String(effectiveBoardOpacity / 100));
-  document.documentElement.style.setProperty("--board-blur", `${settings.boardBlur ?? (isLight ? 12 : 16)}px`);
+  // Прозрачность/blur досок: слайдер управляет только если пользователь его реально трогал
+  // (inline + important перебивает старые `:root { ... !important }`). Иначе отдаём управление
+  // CSS — сохраняем исторический дефолтный вид, не навязывая своё значение.
+  if (settings.boardOpacityTouched && typeof settings.boardOpacity === "number") {
+    document.documentElement.style.setProperty("--board-opacity", String(settings.boardOpacity / 100), "important");
+  } else {
+    document.documentElement.style.removeProperty("--board-opacity");
+  }
+  if (settings.boardBlurTouched && typeof settings.boardBlur === "number") {
+    document.documentElement.style.setProperty("--board-blur", `${settings.boardBlur}px`, "important");
+  } else {
+    document.documentElement.style.removeProperty("--board-blur");
+  }
   document.documentElement.style.setProperty("--overlay", String((settings.overlay ?? (isLight ? 20 : 58)) / 100));
 
   let backgroundImage = "";
@@ -2087,12 +2096,14 @@ function bindWallpaperStyleEvents() {
 
   el.boardOpacityField.addEventListener("input", () => {
     state.settings.boardOpacity = Number(el.boardOpacityField.value);
+    state.settings.boardOpacityTouched = true; // слайдер тронут — теперь управляет он
     syncAdjustFields();
     scheduleBoardStyleApply();
   });
 
   el.boardBlurField.addEventListener("input", () => {
     state.settings.boardBlur = Number(el.boardBlurField.value);
+    state.settings.boardBlurTouched = true;
     syncAdjustFields();
     scheduleBoardStyleApply();
   });
@@ -2103,6 +2114,8 @@ function bindWallpaperStyleEvents() {
   document.getElementById("resetWallpaperStyleBtn").addEventListener("click", async () => {
     const palette = await extractCurrentWallpaperPalette();
     applyDetectedPalette(palette);
+    state.settings.boardOpacityTouched = false; // сброс — снова авто-дефолт
+    state.settings.boardBlurTouched = false;
     await persist();
     await applySettings();
     syncAdjustFields();

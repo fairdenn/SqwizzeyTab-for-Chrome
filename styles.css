@@ -16544,3 +16544,21 @@ body.light .col-add-board-btn {
   }
 }
 
+/* ====================================================
+   SQWIZZEY SLIDERS FIX v2.9.80
+   Прозрачность/blur досок управляются переменными (слайдеры в «Стиле»).
+   Финальный блок — перебивает старые хардкоды .10/.25. Цвет базы сохранён:
+   dark = var(--board-rgb) (= 5,8,7, как было), light = белый (как было).
+   При нетронутом слайдере переменные берутся из :root (текущий дефолтный вид).
+   ==================================================== */
+body .board.board,
+body .add-board-card.add-board-card {
+  background-color: rgba(var(--board-rgb), var(--board-opacity)) !important;
+  backdrop-filter: blur(var(--board-blur)) saturate(128%) !important;
+  -webkit-backdrop-filter: blur(var(--board-blur)) saturate(128%) !important;
+}
+body.light .board.board,
+body.light .add-board-card.add-board-card {
+  background-color: rgba(255, 255, 255, var(--board-opacity)) !important;
+}
+
