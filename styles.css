@@ -1792,7 +1792,7 @@ body.light .style-dialog menu .btn.primary {
 }
 
 #settingsDialog .style-dialog h3 {
-  font-size: 16px !important;
+  font-size: 15px !important;
   margin: 0 0 16px !important;
 }
 
@@ -16693,5 +16693,29 @@ body.light .context-menu.context-menu {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+
+/* ====================================================
+   SQWIZZEY PAGE-PILL FIX v2.9.85
+   1) Белые углы за кнопкой-вкладкой: радиус был рассогласован — pill
+      border-radius:0, а wrap border-radius:11px со своим фоном (в светлой
+      теме белым). На скруглении выглядывала подложка. Синхронизируем радиус
+      pill=wrap и держим overflow:hidden у wrap — pill точно вписан в скругление.
+   2) Надпись вкладки сидела чуть ниже центра — центрируем флексом и слегка
+      приподнимаем (padding-block: top 0 / bottom 3px).
+   ==================================================== */
+.page-pill-wrap.page-pill-wrap {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+.page-pill.page-pill {
+  border-radius: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  padding-block: 0 3px !important;
 }
 
