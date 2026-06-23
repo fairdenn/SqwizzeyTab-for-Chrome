@@ -16731,7 +16731,7 @@ body.light .context-menu.context-menu {
    специфичности (0,5,0), но ниже по файлу → текст поднимается на 2px. */
 .page-pill-wrap.page-pill-wrap .page-title.page-title.page-title,
 .page-pill.page-pill .page-title.page-title.page-title {
-  transform: translateY(-2px) !important;
+  transform: translateY(-1px) !important;
   display: inline-block !important;
 }
 
@@ -16753,7 +16753,9 @@ body.light .context-menu.context-menu {
    ==================================================== */
 /* Карточка «Цвет досок» скрыта (display:none) — оставляем одну колонку,
    чтобы «Основной цвет» занимал всю ширину без пустоты справа. */
-/* окно настройки фона короткое — без скроллбара/жёлоба */
+/* окно настройки фона короткое — без скроллбара/жёлоба.
+   Скроллится сам <dialog>, а не .dialog-card — гасим overflow у обоих. */
+#wallpaperAdjustDialog,
 #wallpaperAdjustDialog .dialog-card.wallpaper-adjust-dialog {
   overflow: hidden !important;
   scrollbar-gutter: auto !important;
