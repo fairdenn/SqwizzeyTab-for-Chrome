@@ -518,7 +518,7 @@ dialog::backdrop {
   width: min(460px, calc(100vw - 40px));
   max-height: min(86vh, 820px);
   overflow: auto;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
   border: 1px solid var(--border);
   border-radius: 20px;
   background: rgba(9, 22, 19, .96);
@@ -16725,8 +16725,12 @@ body.light .context-menu.context-menu {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-/* Текст вкладки сидел чуть ниже центра — поднимаем ровно на 2px. */
-.page-pill.page-pill .page-title {
+/* Текст вкладки сидел ниже центра: правило L~16316
+   (.page-pill-wrap.page-pill-wrap .page-title×3, спец. 0,5,0) опускало его на
+   +1.5px и било мой прежний (0,3,0) селектор. Перебиваем ТЕМ ЖЕ уровнем
+   специфичности (0,5,0), но ниже по файлу → текст поднимается на 2px. */
+.page-pill-wrap.page-pill-wrap .page-title.page-title.page-title,
+.page-pill.page-pill .page-title.page-title.page-title {
   transform: translateY(-2px) !important;
   display: inline-block !important;
 }
@@ -16749,6 +16753,11 @@ body.light .context-menu.context-menu {
    ==================================================== */
 /* Карточка «Цвет досок» скрыта (display:none) — оставляем одну колонку,
    чтобы «Основной цвет» занимал всю ширину без пустоты справа. */
+/* окно настройки фона короткое — без скроллбара/жёлоба */
+#wallpaperAdjustDialog .dialog-card.wallpaper-adjust-dialog {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
 #wallpaperAdjustDialog .adjust-color-grid {
   display: grid !important;
   grid-template-columns: 1fr !important;
