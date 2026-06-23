@@ -16643,6 +16643,31 @@ body.light #boardDialog .dialog-card {
 }
 
 /* ====================================================
+   SQWIZZEY CONTEXT-MENU GLASS v2.9.83
+   Контекстные меню (страницы/доски) в ТЁМНОЙ теме были почти непрозрачными:
+   высокоспецифичное правило rgba(var(--neutral-menu-dark-rgb), .94) (L~5139,
+   спец. 1,2,1) перебивало все стеклянные page-меню правила (1,2,0). В светлой
+   теме такой перебой уже был (.35), в тёмной — нет. Приводим меню к тому же
+   полупрозрачному стеклу «под доску», что и окна/настройки.
+   Двойной класс .context-menu.context-menu (спец. 1,3,1) + позиция в конце —
+   побивают и [style]-правила (меню имеет inline left/top от showMenu).
+   ==================================================== */
+body:not(.light) #menuLayer .context-menu.context-menu,
+body:not(.light) .context-menu.context-menu {
+  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
+  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
+  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+}
+body.light #menuLayer .context-menu.context-menu,
+body.light .context-menu.context-menu {
+  background: rgba(255, 255, 255, .35) !important;
+  background-color: rgba(255, 255, 255, .35) !important;
+  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+}
+
+/* ====================================================
    SQWIZZEY PAGE-MENU TEXT FIX v2.9.81
    Косяк 2: пункты page-меню обрезались до «П.»/«У.».
    Причина: иконки в page-меню скрыты (.ion-icon{display:none}), но grid
