@@ -2921,27 +2921,47 @@ function refreshBoardLinks(boardId) {
    Новые закладки автоматически попадают в соответствующую доску.
    ==================================================== */
 
-// Находит доску, связанную с папкой Chrome (по folderId, фолбэк — по названию)
+// Находит доску, связанную с папкой Chrome, на ЛЮБОЙ странице.
+// Матч по folderId, фолбэк — по названию папки (для старых импортов без folderId).
+// Возвращает { board, page } или null. Это ключ к багу №1: раньше искали
+// только в activePage(), поэтому доски на других страницах не синхронизировались.
+function findBoardForFolderGlobal(folderId, folderTitle) {
+  for (const page of state.pages) {
+    const byId = page.boards.find(b => b.bookmarkFolderId === folderId);
+    if (byId) return { board: byId, page };
+  }
+  if (folderTitle) {
+    for (const page of state.pages) {
+      const byTitle = page.boards.find(b => !b.bookmarkFolderId && b.title === folderTitle);
+      if (byTitle) {
+        byTitle.bookmarkFolderId = folderId; // запоминаем привязку на будущее
+        return { board: byTitle, page };
+      }
+    }
+  }
+  return null;
+}
+
+// Совместимость: матч в пределах одной страницы (используется при импорте папок).
 function findBoardForFolder(page, folderId, folderTitle) {
   let board = page.boards.find(b => b.bookmarkFolderId === folderId);
   if (board) return board;
-  // Фолбэк: по названию (для старых импортов без folderId)
   if (folderTitle) {
     board = page.boards.find(b => !b.bookmarkFolderId && b.title === folderTitle);
     if (board) {
-      board.bookmarkFolderId = folderId; // запоминаем на будущее
+      board.bookmarkFolderId = folderId;
       return board;
     }
   }
   return null;
 }
 
-// Полная синхронизация: проходим все папки Chrome, добавляем новые закладки в доски
+// Полная синхронизация: проходим все папки Chrome, добавляем новые закладки
+// в привязанные доски на ЛЮБОЙ странице. В авто-режиме createMissing=false —
+// новые папки Chrome не навязываем как доски (импорт выбирает пользователь).
 async function syncBookmarksToBoards(opts = {}) {
   const { createMissing = false } = opts;
-  let page;
-  try { page = activePage(); } catch { return; }
-  if (!page) return;
+  if (!state || !Array.isArray(state.pages)) return;
 
   let folders;
   try { folders = await getDirectFolderLinks(); }
@@ -2951,7 +2971,8 @@ async function syncBookmarksToBoards(opts = {}) {
   const changedBoardIds = new Set();
 
   folders.forEach(folder => {
-    let board = findBoardForFolder(page, folder.id, folder.title);
+    const match = findBoardForFolderGlobal(folder.id, folder.title);
+    let board = match?.board || null;
 
     if (!board && createMissing) {
       board = {
@@ -2960,7 +2981,7 @@ async function syncBookmarksToBoards(opts = {}) {
         bookmarkFolderId: folder.id,
         links: []
       };
-      page.boards.push(board);
+      activePage().boards.push(board);
       newBoardCreated = true;
     }
     if (!board) return;
@@ -2977,11 +2998,11 @@ async function syncBookmarksToBoards(opts = {}) {
 
   if (newBoardCreated || changedBoardIds.size) {
     await persist();
-    // Если создалась новая доска — нужен полный рендер (новая колонка)
+    // Новая доска → полный рендер. Иначе точечно обновляем изменённые доски
+    // (refreshBoardLinks тихо пропустит доски не на активной странице).
     if (newBoardCreated) {
       renderBoards();
     } else {
-      // Иначе точечно обновляем только изменённые доски
       changedBoardIds.forEach(id => refreshBoardLinks(id));
     }
   }
@@ -3011,25 +3032,26 @@ async function getDirectFolderLinks() {
   return folders;
 }
 
-// Живой слушатель: закладка создана в Chrome пока вкладка открыта
+// Живой слушатель: закладка создана/удалена в Chrome пока newtab открыт.
+// Ищет привязанную доску на ЛЮБОЙ странице (раньше — только активная).
 function bindBookmarkListeners() {
   if (!chrome?.bookmarks?.onCreated) return;
+  if (window._sqwBookmarkListenersBound) return; // защита от двойной привязки
+  window._sqwBookmarkListenersBound = true;
 
   chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
     if (!bookmark.url) return; // это папка, не закладка
-    let page;
-    try { page = activePage(); } catch { return; }
-    if (!page) return;
+    if (!state || !Array.isArray(state.pages)) return;
 
-    // Находим название родительской папки
     let parentTitle = "";
     try {
       const [parent] = await chrome.bookmarks.get(bookmark.parentId);
       parentTitle = parent?.title || "";
     } catch {}
 
-    const board = findBoardForFolder(page, bookmark.parentId, parentTitle);
-    if (!board) return; // папка не привязана к доске — игнорируем
+    const match = findBoardForFolderGlobal(bookmark.parentId, parentTitle);
+    if (!match) return; // папка не привязана к доске — игнорируем
+    const board = match.board;
 
     if (board.links.some(l => l.url === bookmark.url)) return; // уже есть
     board.links.push({ id: uid("link"), title: bookmark.title || bookmark.url, url: bookmark.url });
@@ -3041,12 +3063,18 @@ function bindBookmarkListeners() {
   chrome.bookmarks.onRemoved.addListener(async (id, removeInfo) => {
     const node = removeInfo.node;
     if (!node || !node.url) return;
-    let page;
-    try { page = activePage(); } catch { return; }
-    if (!page) return;
+    if (!state || !Array.isArray(state.pages)) return;
 
-    const board = page.boards.find(b => b.bookmarkFolderId === removeInfo.parentId);
-    if (!board) return;
+    let parentTitle = "";
+    try {
+      const [parent] = await chrome.bookmarks.get(removeInfo.parentId);
+      parentTitle = parent?.title || "";
+    } catch {}
+
+    const match = findBoardForFolderGlobal(removeInfo.parentId, parentTitle);
+    if (!match) return;
+    const board = match.board;
+
     const before = board.links.length;
     board.links = board.links.filter(l => l.url !== node.url);
     if (board.links.length !== before) {
@@ -3067,4 +3095,21 @@ queueMicrotask(() => {
     }
   }, 300);
 });
+
+// Страховочный ресинк: когда вкладка снова становится видимой или получает фокус,
+// досинхронизируем привязанные папки. Это ловит закладки, добавленные пока
+// newtab был в фоне или вовсе закрыт (когда live-слушатель не работал).
+let _bookmarkResyncTimer = null;
+function scheduleBookmarkResync() {
+  clearTimeout(_bookmarkResyncTimer);
+  _bookmarkResyncTimer = setTimeout(async () => {
+    try { await syncBookmarksToBoards({ createMissing: false }); }
+    catch (e) { console.warn("bookmark resync failed", e); }
+  }, 250);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") scheduleBookmarkResync();
+});
+window.addEventListener("focus", scheduleBookmarkResync);
 
