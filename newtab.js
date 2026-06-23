@@ -17,6 +17,7 @@ let wallpaperSelectionChanged = false;
 let wallpaperUrlChanged = false;
 let pendingDeletePageId = null;
 let boardLayoutResizeTimer = null;
+let searchDebounceTimer = null;
 let activeMenuTrigger = null;
 
 const el = {
@@ -472,7 +473,10 @@ function bindEvents() {
   document.getElementById("emptyTrashBtn").addEventListener("click", emptyTrash);
   document.getElementById("confirmDeletePageBtn")?.addEventListener("click", confirmDeletePage);
 
-  el.searchInput.addEventListener("input", renderBoards);
+  el.searchInput.addEventListener("input", () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(renderBoards, 130);
+  });
   window.addEventListener("resize", () => {
     clearTimeout(boardLayoutResizeTimer);
     boardLayoutResizeTimer = setTimeout(renderBoards, 120);
