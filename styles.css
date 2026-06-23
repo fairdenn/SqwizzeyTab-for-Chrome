@@ -16562,3 +16562,83 @@ body.light .add-board-card.add-board-card {
   background-color: rgba(255, 255, 255, var(--board-opacity)) !important;
 }
 
+/* ====================================================
+   SQWIZZEY EMPTY-COLUMN DROP FIX v2.9.81
+   Косяк 3: в пустую колонку нельзя было перетащить доску.
+   Прежнее правило (.board-drop-gap.empty-col-gap { display:none })
+   прятало drop-зону. Финальный блок — перебивает его.
+   В покое зона свёрнута (не мозолит глаза), раскрывается ТОЛЬКО
+   когда тащат доску (:has(.board.dragging)) — тогда есть куда дропнуть.
+   ==================================================== */
+.board-drop-gap.empty-col-gap.empty-col-gap {
+  display: block !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  transition: height 150ms ease, max-height 150ms ease, background 150ms ease, border-color 150ms ease !important;
+}
+.board-drop-gap.empty-col-gap.empty-col-gap::before { content: "" !important; }
+
+/* Рамка статичная (rgba), а не color-mix(var(--accent)): --accent в :root
+   мёртвая (self-ref на L11), задаётся JS — без неё color-mix невалиден и
+   рамка пропадала бы. Статика гарантирует видимую подсказку всегда. */
+#boardsGrid:has(.board.dragging) .board-drop-gap.empty-col-gap.empty-col-gap {
+  height: 80px !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+  border: 1.5px dashed rgba(255, 255, 255, .24) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .045) !important;
+}
+body.light #boardsGrid:has(.board.dragging) .board-drop-gap.empty-col-gap.empty-col-gap {
+  border-color: rgba(18, 24, 26, .20) !important;
+  background: rgba(18, 24, 26, .03) !important;
+}
+
+.board-drop-gap.empty-col-gap.empty-col-gap.drop-active {
+  height: 80px !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+  background: rgba(255, 255, 255, .10) !important;
+  border: 1.5px dashed rgba(255, 255, 255, .55) !important;
+  border-radius: 12px !important;
+}
+body.light .board-drop-gap.empty-col-gap.empty-col-gap.drop-active {
+  background: rgba(18, 24, 26, .07) !important;
+  border-color: rgba(18, 24, 26, .45) !important;
+}
+
+/* ====================================================
+   SQWIZZEY PAGE-MENU TEXT FIX v2.9.81
+   Косяк 2: пункты page-меню обрезались до «П.»/«У.».
+   Причина: иконки в page-меню скрыты (.ion-icon{display:none}), но grid
+   кнопки остался двухколоночным (16px под иконку + 1fr), и текст-span
+   авто-садился в узкую 16px-колонку -> overflow+ellipsis -> «П…».
+   Фикс: кнопка page-меню одноколоночная, текст на всю ширину.
+   (Иконки остаются скрытыми — text-only задумка не меняется.)
+   ==================================================== */
+#menuLayer .context-menu.page-context-menu button,
+.context-menu.page-context-menu button {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  justify-items: start !important;
+}
+#menuLayer .context-menu.page-context-menu button span,
+.context-menu.page-context-menu button span {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  grid-column: 1 / -1 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+

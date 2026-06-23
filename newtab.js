@@ -2885,9 +2885,23 @@ createStableBoardColumns = function(totalItems) {
 };
 
 appendBoardLayoutItem = function(layout, node, index) {
-  // Round-robin: 0→col0, 1→col1, 2→col2, 3→col3, 4→col0...
-  // All 4 columns always get boards from the start
-  const col = index % layout.columns.length;
+  // Explicit-column: раскладываем доску в её сохранённую колонку board.col.
+  // Это держит раскладку стабильной между reload (косяк 1: round-robin рендер
+  // не совпадал с column-major чтением и сбрасывал расстановку).
+  // Миграция: у старых досок col нет — назначаем round-robin по индексу,
+  // чтобы первый рендер совпал с прежним визуалом, дальше col фиксируется.
+  const id = node.dataset && node.dataset.boardId;
+  let col;
+  if (id) {
+    let board = null;
+    try { board = activePage().boards.find(b => b.id === id); } catch {}
+    col = board && Number.isInteger(board.col)
+      ? Math.min(layout.columns.length - 1, Math.max(0, board.col))
+      : (index % layout.columns.length);
+  } else {
+    // невидимый add-zone div (createAddBoardZone) — позиция не важна
+    col = index % layout.columns.length;
+  }
   layout.columns[col].appendChild(node);
 };
 
@@ -2897,6 +2911,11 @@ function addBoardGaps() {
 
   document.querySelectorAll(".board-column").forEach((col, colIndex) => {
     const boards = [...col.querySelectorAll(":scope > .board")];
+
+    // Пустая колонка: своя drop-зона, иначе в неё нельзя перетащить доску (косяк 3)
+    if (!boards.length) {
+      col.appendChild(makeEmptyGap(col));
+    }
 
     // Gap под каждой доской
     boards.forEach(board => {
@@ -2994,10 +3013,14 @@ function clearActiveGaps(except) {
 async function readAndSaveBoardOrder() {
   const page = activePage();
   const newOrder = [];
-  document.querySelectorAll(".board-column").forEach(col => {
+  document.querySelectorAll(".board-column").forEach((col, colIndex) => {
     col.querySelectorAll(":scope > .board[data-board-id]").forEach(el => {
       const b = page.boards.find(x => x.id === el.dataset.boardId);
-      if (b && !newOrder.includes(b)) newOrder.push(b);
+      if (b && !newOrder.includes(b)) {
+        // Фиксируем колонку доски явно (косяк 1) — рендер читает её из board.col
+        b.col = colIndex;
+        newOrder.push(b);
+      }
     });
   });
   if (newOrder.length === page.boards.length) {
