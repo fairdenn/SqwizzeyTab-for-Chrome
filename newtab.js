@@ -146,6 +146,7 @@ const I18N = {
     animationsDesc: "Мягкие переходы и появление элементов (уважает системную настройку «уменьшить движение»)",
     dark: "Тёмная",
     light: "Светлая",
+    yourWallpapers: "Ваши фоны",
     starterWallpapers: "Фоны",
     uploadWallpaper: "Загрузить фон",
     moreWallpapers: "Больше фонов",
@@ -461,7 +462,9 @@ function bindEvents() {
   });
 
   el.userWallpapersToggle?.addEventListener("click", () => {
-    el.userWallpapersGrid.classList.toggle("hidden");
+    const collapsed = el.userWallpapersGrid.classList.toggle("hidden");
+    el.userWallpapersToggle.classList.toggle("collapsed", collapsed);
+    el.userWallpapersToggle.setAttribute("aria-expanded", String(!collapsed));
   });
   document.getElementById("clearWallpaperBtn")?.addEventListener("click", clearWallpaper);
   document.getElementById("emptyTrashBtn").addEventListener("click", emptyTrash);

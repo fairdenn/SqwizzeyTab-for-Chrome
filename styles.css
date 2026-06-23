@@ -9335,8 +9335,8 @@ body.light .badge {
   border-top: 0 !important;
   border-radius: 0 0 22px 22px !important;
   background: rgba(var(--board-rgb), .25) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
   box-shadow: 0 16px 42px rgba(0,0,0,.16) !important;
   display: grid !important;
   grid-template-columns: auto auto minmax(260px, 520px) !important;
@@ -9510,8 +9510,8 @@ html body .boards-grid > .add-board-zone {
 
   background: rgba(var(--board-rgb), .25) !important;
   background-color: rgba(var(--board-rgb), .25) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 
   box-shadow: 0 10px 26px rgba(0,0,0,.10) !important;
   padding: 18px max(24px, calc((100vw - 1280px) / 2 + 24px)) !important;
@@ -9667,8 +9667,8 @@ body.light .settings-panel {
   background-image: none !important;
   border-color: rgba(18, 24, 26, .14) !important;
   box-shadow: 0 24px 78px rgba(0,0,0,.16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* Конкретно корзина: перебиваем старые более поздние правила */
@@ -9678,8 +9678,8 @@ body.light dialog#trashDialog .dialog-card.trash-dialog {
   background: rgba(255, 255, 255, .35) !important;
   background-color: rgba(255, 255, 255, .35) !important;
   background-image: none !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* Подложка модального окна: оставляем затемнение/blur, но не делаем его молочной стеной */
@@ -9826,8 +9826,8 @@ body.light .topbar {
 .popover-menu {
   background: color-mix(in srgb, var(--accent) 35%, transparent) !important;
   background-color: color-mix(in srgb, var(--accent) 35%, transparent) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* Диалоги импорта/корзины - второй цвет */
@@ -9837,8 +9837,8 @@ body.light .topbar {
 .trash-dialog {
   background: color-mix(in srgb, var(--secondary) 35%, transparent) !important;
   background-color: color-mix(in srgb, var(--secondary) 35%, transparent) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* 2. Style dialog: не скроллятся кнопки темы и загрузка.
@@ -9891,8 +9891,8 @@ dialog .style-dialog {
   padding-top: 10px !important;
   margin-top: 10px !important;
   background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--secondary) 35%, transparent) 28%) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) !important;
+  backdrop-filter: blur(13px) !important;
+  -webkit-backdrop-filter: blur(13px) !important;
 }
 
 /* Кнопка загрузки изображения не должна пропадать из кликабельности */
@@ -9939,8 +9939,8 @@ dialog .style-dialog {
 #wallpaperAdjustDialog .dialog-card,
 .wallpaper-adjust-dialog {
   background: color-mix(in srgb, var(--secondary) 38%, transparent) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 .adjust-color-card,
@@ -9977,8 +9977,8 @@ body.light dialog#importDialog .dialog-card.wide-dialog {
   background-image: none !important;
   border-color: rgba(18, 24, 26, .14) !important;
   box-shadow: 0 24px 78px rgba(0,0,0,.16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* Список папок внутри импорта тоже полупрозрачный, не белая плита */
@@ -10314,8 +10314,8 @@ html body.light .dialog-card {
   background-image: none !important;
   border: 1px solid rgba(18, 24, 26, .14) !important;
   box-shadow: 0 24px 78px rgba(0, 0, 0, .16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* 2. Внутренние панели не должны быть непрозрачными */
@@ -10407,11 +10407,11 @@ html body.light dialog input[type="checkbox"] {
   min-width: 242px !important;
   border-radius: 16px !important;
   border: 1px solid var(--border) !important;
-  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
+  background: rgba(var(--board-rgb), .25) !important;
+  background-color: rgba(var(--board-rgb), .25) !important;
   box-shadow: var(--shadow) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
   overflow: hidden !important;
 }
 
@@ -10421,8 +10421,8 @@ body.light .page-context-menu {
   background-color: rgba(255, 255, 255, .35) !important;
   border: 1px solid rgba(18, 24, 26, .14) !important;
   box-shadow: 0 24px 78px rgba(0, 0, 0, .16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 #menuLayer .context-menu.page-context-menu button,
@@ -10508,16 +10508,17 @@ body.light .page-context-menu button:focus-visible {
 //////////////////////////////////////////////////// */
 
 /* unify modal glass with board look */
+/* Фикс прозрачность/блюр (не var(--board-*)) — окна НЕ зависят от слайдеров досок */
 #importBookmarksDialog .dialog-card.import-dialog,
 #generalSettingsDialog .dialog-card.general-dialog,
 #deletePageDialog .dialog-card.delete-page-dialog,
 #settingsDialog .dialog-card.style-dialog {
-  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
+  background: rgba(var(--board-rgb), .25) !important;
+  background-color: rgba(var(--board-rgb), .25) !important;
   border: 1px solid var(--border) !important;
   box-shadow: var(--shadow) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 body.light #importBookmarksDialog .dialog-card.import-dialog,
@@ -10528,8 +10529,8 @@ body.light #settingsDialog .dialog-card.style-dialog {
   background-color: rgba(255, 255, 255, .35) !important;
   border: 1px solid rgba(18, 24, 26, .14) !important;
   box-shadow: 0 24px 78px rgba(0, 0, 0, .16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* make inner sections translucent too in light theme */
@@ -10632,8 +10633,8 @@ body.light dialog#importBookmarksDialog .dialog-card.wide-dialog {
   background-image: none !important;
   border: 1px solid rgba(18, 24, 26, .14) !important;
   box-shadow: 0 24px 78px rgba(0, 0, 0, .16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 body.light #importBookmarksDialog #importFoldersList,
@@ -11101,8 +11102,8 @@ html body .boards-grid > .add-board-card {
 .board,
 .add-board-card {
   position: relative !important;
-  background: rgba(var(--glass-dark-rgb), var(--board-opacity, .25)) !important;
-  background-color: rgba(var(--glass-dark-rgb), var(--board-opacity, .25)) !important;
+  background: rgba(var(--glass-dark-rgb), .25) !important;
+  background-color: rgba(var(--glass-dark-rgb), .25) !important;
   border: 1px solid var(--glass-stroke-dark) !important;
   border-radius: var(--ui-radius) !important;
   color: var(--text-strong-dark) !important;
@@ -11127,7 +11128,7 @@ body.light .add-board-card {
 .board:focus-within,
 .add-board-card:hover,
 .add-board-card:focus-within {
-  background: rgba(var(--glass-dark-rgb), calc(var(--board-opacity, .25) + .035)) !important;
+  background: rgba(var(--glass-dark-rgb), calc(.25 + .035)) !important;
   border-color: color-mix(in srgb, var(--glass-stroke-dark) 76%, white 14%) !important;
   transform: none !important;
 }
@@ -12594,11 +12595,11 @@ body .boards-grid,
   border-radius: 13px !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
-  background: rgba(var(--board-rgb), calc(var(--board-opacity, .25) + .04)) !important;
+  background: rgba(var(--board-rgb), calc(.25 + .04)) !important;
   border: 1px solid var(--border) !important;
   box-shadow: none !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 body.light .inline-board-form {
@@ -12656,8 +12657,8 @@ body.light #wallpaperAdjustDialog .dialog-card {
   background-color: rgba(255,255,255,.35) !important;
   border: 1px solid rgba(18,24,26,.14) !important;
   box-shadow: 0 24px 78px rgba(0,0,0,.16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* Bookmark edit square artifact fix */
@@ -13157,8 +13158,8 @@ body.light .page-menu-btn:focus-visible {
   background-color: rgba(var(--board-rgb), .36) !important;
   border: 1px solid var(--border) !important;
   box-shadow: var(--shadow) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(135%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(135%) !important;
+  backdrop-filter: blur(13px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(135%) !important;
 }
 
 body.light #menuLayer .context-menu.page-context-menu,
@@ -13374,8 +13375,8 @@ body .boards-grid,
   background-color: rgba(8, 12, 18, .42) !important;
   border: 1px solid rgba(255,255,255,.10) !important;
   box-shadow: 0 18px 42px rgba(0,0,0,.28) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 body.light #menuLayer .context-menu.page-context-menu,
@@ -13727,8 +13728,8 @@ body.light .page-menu-btn:focus-visible {
   background-color: rgba(8, 12, 18, .42) !important;
   border: 1px solid rgba(255,255,255,.10) !important;
   box-shadow: 0 18px 42px rgba(0,0,0,.28) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
   overflow: hidden !important;
 }
 
@@ -13896,18 +13897,18 @@ body .boards-grid,
 /* Board opacity and blur must use live CSS variables, not hardcoded .25. */
 body .board,
 body .add-board-card {
-  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  background: rgba(var(--board-rgb), .25) !important;
+  background-color: rgba(var(--board-rgb), .25) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 body.light .board,
 body.light .add-board-card {
-  background: rgba(255, 255, 255, var(--board-opacity, .25)) !important;
-  background-color: rgba(255, 255, 255, var(--board-opacity, .25)) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  background: rgba(255, 255, 255, .25) !important;
+  background-color: rgba(255, 255, 255, .25) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* Page button: normal default state, edit icon only on hover/focus. */
@@ -14078,8 +14079,8 @@ body.light .page-pill-wrap.menu-open .page-menu-btn {
   background-color: rgba(8, 12, 18, .42) !important;
   border: 1px solid rgba(255,255,255,.10) !important;
   box-shadow: 0 18px 42px rgba(0,0,0,.28) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
   overflow: hidden !important;
 }
 
@@ -14302,18 +14303,18 @@ body .boards-grid {
 /* Доски должны реально слушать ползунки. */
 body .board,
 body .add-board-card {
-  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  background: rgba(var(--board-rgb), .25) !important;
+  background-color: rgba(var(--board-rgb), .25) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 body.light .board,
 body.light .add-board-card {
-  background: rgba(255, 255, 255, var(--board-opacity, .25)) !important;
-  background-color: rgba(255, 255, 255, var(--board-opacity, .25)) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  background: rgba(255, 255, 255, .25) !important;
+  background-color: rgba(255, 255, 255, .25) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* Страница: Home не должен превращаться в H...; edit живёт внутри формы. */
@@ -16625,12 +16626,12 @@ body.light .board-drop-gap.empty-col-gap.empty-col-gap.drop-active {
    ==================================================== */
 #pageDialog .dialog-card,
 #boardDialog .dialog-card {
-  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
+  background: rgba(var(--board-rgb), .25) !important;
+  background-color: rgba(var(--board-rgb), .25) !important;
   border: 1px solid var(--border) !important;
   box-shadow: var(--shadow) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 body.light #pageDialog .dialog-card,
 body.light #boardDialog .dialog-card {
@@ -16638,8 +16639,8 @@ body.light #boardDialog .dialog-card {
   background-color: rgba(255, 255, 255, .35) !important;
   border: 1px solid rgba(18, 24, 26, .14) !important;
   box-shadow: 0 24px 78px rgba(0, 0, 0, .16) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* ====================================================
@@ -16654,17 +16655,17 @@ body.light #boardDialog .dialog-card {
    ==================================================== */
 body:not(.light) #menuLayer .context-menu.context-menu,
 body:not(.light) .context-menu.context-menu {
-  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  background: rgba(var(--board-rgb), .25) !important;
+  background-color: rgba(var(--board-rgb), .25) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 body.light #menuLayer .context-menu.context-menu,
 body.light .context-menu.context-menu {
   background: rgba(255, 255, 255, .35) !important;
   background-color: rgba(255, 255, 255, .35) !important;
-  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
-  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  backdrop-filter: blur(13px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(132%) !important;
 }
 
 /* ====================================================
@@ -16728,5 +16729,52 @@ body.light .context-menu.context-menu {
 .page-pill.page-pill .page-title {
   transform: translateY(-2px) !important;
   display: inline-block !important;
+}
+
+/* ====================================================
+   SQWIZZEY COLLAPSE «Ваши фоны» v2.9.87
+   Кнопка сворачивания не работала: класс .hidden на .user-wallpapers-grid
+   не имел правила display:none, а стрелка не реагировала. Чиним: грид
+   реально скрывается, стрелка поворачивается, есть переход.
+   ==================================================== */
+.user-wallpapers-grid.hidden { display: none !important; }
+.collapse-chevron { display: inline-block !important; transition: transform .2s ease !important; }
+.style-collapse-title.collapsed .collapse-chevron { transform: rotate(180deg) !important; }
+
+/* ====================================================
+   SQWIZZEY WALLPAPER-ADJUST FIX v2.9.87
+   Окно «Настройка стиля фона» было кривым: media(max-width:680px) схлопывал
+   color-grid в 1 колонку, содержимое карточек центрировалось, пикер мелкий.
+   Делаем 2 колонки цветов, содержимое влево столбиком, пикер на всю ширину.
+   ==================================================== */
+/* Карточка «Цвет досок» скрыта (display:none) — оставляем одну колонку,
+   чтобы «Основной цвет» занимал всю ширину без пустоты справа. */
+#wallpaperAdjustDialog .adjust-color-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+#wallpaperAdjustDialog .adjust-color-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  text-align: left !important;
+  gap: 6px !important;
+}
+#wallpaperAdjustDialog .adjust-color-card span,
+#wallpaperAdjustDialog .adjust-color-card strong {
+  justify-self: start !important;
+  text-align: left !important;
+}
+#wallpaperAdjustDialog .color-input-row {
+  display: grid !important;
+  grid-template-columns: 1fr 40px !important;
+  gap: 8px !important;
+  align-items: center !important;
+  margin-top: 2px !important;
+}
+#wallpaperAdjustDialog .adjust-color-card input[type="color"] {
+  width: 100% !important;
+  height: 36px !important;
 }
 
