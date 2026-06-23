@@ -87,7 +87,8 @@ const el = {
   trashDialog: document.getElementById("trashDialog"),
   trashLinksList: document.getElementById("trashLinksList"),
   trashBoardsList: document.getElementById("trashBoardsList"),
-  trashPagesList: document.getElementById("trashPagesList")
+  trashPagesList: document.getElementById("trashPagesList"),
+  welcomeDialog: document.getElementById("welcomeDialog")
 };
 
 
@@ -159,6 +160,18 @@ const I18N = {
     importFromFile: "Импорт из файла браузера (.html)…",
     importFromFileTitle: "Импорт из файла браузера",
     importFromFileDesc: "Выбери папки из файла закладок, которые импортировать как доски на текущую страницу:",
+    welcomeTitle: "Добро пожаловать в Sqwizzey Tab",
+    welcomeSubtitle: "Новая вкладка — это доски с закладками. С чего начнём?",
+    welcomeImportChrome: "Импорт закладок Chrome",
+    welcomeImportChromeDesc: "Перенести папки закладок Chrome как доски",
+    welcomeImportFile: "Импорт из другого браузера",
+    welcomeImportFileDesc: "Файл закладок .html из Firefox, Edge, Opera, Safari",
+    welcomeStartFresh: "Начать с чистого листа",
+    welcomeStartFreshDesc: "Пустая доска — добавишь закладки сам",
+    syncSection: "Синхронизация и данные",
+    syncChecking: "Проверяю синхронизацию…",
+    syncOn: "Синхронизация через Google-аккаунт включена. Данные синхронизируются между устройствами, где вы вошли в Chrome.",
+    syncOff: "Синхронизация недоступна. Войдите в аккаунт Chrome и включите синхронизацию расширений в настройках браузера.",
     importSelected: "Импортировать выбранное",
     skip: "Пропустить",
     bookmarksCount: "закладок",
@@ -225,6 +238,18 @@ const I18N = {
     importFromFile: "Import from browser file (.html)…",
     importFromFileTitle: "Import from browser file",
     importFromFileDesc: "Select folders from the bookmark file to import as boards on the current page:",
+    welcomeTitle: "Welcome to Sqwizzey Tab",
+    welcomeSubtitle: "Your new tab is a board of bookmarks. Where do we start?",
+    welcomeImportChrome: "Import Chrome bookmarks",
+    welcomeImportChromeDesc: "Bring your Chrome bookmark folders in as boards",
+    welcomeImportFile: "Import from another browser",
+    welcomeImportFileDesc: "A .html bookmarks file from Firefox, Edge, Opera, Safari",
+    welcomeStartFresh: "Start fresh",
+    welcomeStartFreshDesc: "An empty board — add bookmarks yourself",
+    syncSection: "Sync & data",
+    syncChecking: "Checking sync…",
+    syncOn: "Sync via your Google account is on. Data syncs across devices where you're signed into Chrome.",
+    syncOff: "Sync unavailable. Sign into Chrome and enable extension sync in your browser settings.",
     importSelected: "Import selected",
     skip: "Skip",
     bookmarksCount: "bookmarks",
@@ -377,6 +402,27 @@ function bindEvents() {
     document.getElementById("importBookmarksFileField")?.click();
   });
   document.getElementById("importBookmarksFileField")?.addEventListener("change", handleBookmarkFileImport);
+
+  document.getElementById("welcomeImportChromeBtn")?.addEventListener("click", async () => {
+    await markOnboardingDone();
+    el.welcomeDialog?.close();
+    openImportDialog(true);
+  });
+  document.getElementById("welcomeImportFileBtn")?.addEventListener("click", async () => {
+    await markOnboardingDone();
+    el.welcomeDialog?.close();
+    document.getElementById("importBookmarksFileField")?.click();
+  });
+  document.getElementById("welcomeStartFreshBtn")?.addEventListener("click", async () => {
+    await markOnboardingDone();
+    el.welcomeDialog?.close();
+  });
+  el.welcomeDialog?.addEventListener("close", () => { markOnboardingDone().catch(console.error); });
+
+  document.getElementById("settingsImportChromeBtn")?.addEventListener("click", () => openImportDialog(false));
+  document.getElementById("settingsImportFileBtn")?.addEventListener("click", () => {
+    document.getElementById("importBookmarksFileField")?.click();
+  });
   el.fetchBookmarkTitleBtn.addEventListener("click", fetchTitleForBookmarkEdit);
   el.saveBookmarkEditBtn.addEventListener("click", saveBookmarkEdit);
   el.bookmarkDescriptionField.addEventListener("input", updateBookmarkDescriptionCounter);
@@ -1621,10 +1667,47 @@ async function maybeOpenImportOnboarding() {
       return;
     }
 
-    setTimeout(() => openImportDialog(true).catch(console.error), 350);
+    setTimeout(() => openWelcomeDialog(), 350);
   } catch (error) {
     console.error("Import onboarding failed", error);
   }
+}
+
+async function markOnboardingDone() {
+  if (state.onboarding?.importAsked === true) return;
+  state.onboarding = { ...(state.onboarding || {}), importAsked: true };
+  await persist();
+}
+
+function openWelcomeDialog() {
+  if (!el.welcomeDialog) return;
+  applyI18n();
+  updateSyncStatusUI();
+  if (!el.welcomeDialog.open) el.welcomeDialog.showModal();
+}
+
+// Определяет доступность синхронизации через Google-аккаунт и обновляет статус-блоки
+// (в welcome-диалоге и в общих настройках).
+async function updateSyncStatusUI() {
+  let ok = false;
+  try {
+    if (typeof chrome !== "undefined" && chrome?.storage?.sync) {
+      await chrome.storage.sync.getBytesInUse(null); // резолвится → sync API доступен
+      ok = (typeof syncStatus !== "undefined" && syncStatus) ? syncStatus.available !== false : true;
+    }
+  } catch {
+    ok = false;
+  }
+
+  const text = ok ? t("syncOn") : t("syncOff");
+  const stateAttr = ok ? "on" : "off";
+
+  [["welcomeSyncStatus", "welcomeSyncText"], ["settingsSyncStatus", "settingsSyncText"]].forEach(([boxId, textId]) => {
+    const box = document.getElementById(boxId);
+    const txt = document.getElementById(textId);
+    if (box) box.dataset.state = stateAttr;
+    if (txt) txt.textContent = text;
+  });
 }
 
 async function openImportDialog(isOnboarding = false) {
@@ -2245,6 +2328,7 @@ function openGeneralSettings() {
   el.hideExtraField.checked = state.settings.hideExtraBookmarks === true;
   el.visibleBookmarksField.value = String(state.settings.visibleBookmarks || 10);
   el.shortenTitlesField.checked = state.settings.shortenTitles !== false;
+  updateSyncStatusUI();
   el.generalSettingsDialog.showModal();
 }
 

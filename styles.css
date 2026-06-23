@@ -16367,3 +16367,133 @@ body.light .col-add-board-btn {
   background: color-mix(in srgb, currentColor 12%, transparent) !important;
 }
 
+/* ====================================================
+   SQWIZZEY ONBOARDING + SYNC STATUS v2.9.78
+   Welcome-диалог первого запуска, статус Google-синхронизации, импорт из файла.
+   Мастер-блок в конце файла — в стиле приложения, не зависит от слоёв выше.
+   ==================================================== */
+#welcomeDialog::backdrop {
+  background: rgba(5, 8, 7, 0.62);
+  backdrop-filter: blur(6px);
+}
+#welcomeDialog .welcome-dialog {
+  width: min(560px, 92vw);
+  max-width: min(560px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.welcome-head h3 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.welcome-head p {
+  margin: 0;
+  opacity: 0.72;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.welcome-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 120ms ease;
+}
+.welcome-card:hover {
+  border-color: color-mix(in srgb, var(--accent, #d49a57) 55%, transparent);
+  background: color-mix(in srgb, var(--accent, #d49a57) 12%, transparent);
+  transform: translateY(-1px);
+}
+.welcome-card:focus-visible {
+  outline: 2px solid var(--accent, #d49a57);
+  outline-offset: 2px;
+}
+.welcome-card-icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent, #d49a57) 18%, transparent);
+  color: var(--accent, #d49a57);
+}
+.welcome-card-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 32;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.welcome-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.welcome-card-text strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.welcome-card-text small {
+  font-size: 13px;
+  opacity: 0.66;
+  line-height: 1.35;
+}
+.welcome-sync-status,
+.settings-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.welcome-sync-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #9aa1ac;
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+[data-state="on"] .welcome-sync-dot {
+  background: #1fa971;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #1fa971 22%, transparent);
+}
+[data-state="off"] .welcome-sync-dot {
+  background: #e6a100;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #e6a100 22%, transparent);
+}
+.import-file-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+}
+.settings-sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+

@@ -157,6 +157,18 @@
           </div>
         </section>
 
+        <section class="settings-section">
+          <div class="settings-section-title" data-i18n="syncSection">Синхронизация и данные</div>
+          <div id="settingsSyncStatus" class="settings-sync-status" data-state="checking">
+            <span class="welcome-sync-dot" aria-hidden="true"></span>
+            <span id="settingsSyncText" data-i18n="syncChecking">Проверяю синхронизацию…</span>
+          </div>
+          <div class="settings-sync-actions">
+            <button id="settingsImportChromeBtn" type="button" class="btn ghost" data-i18n="importChromeBookmarks">Импорт закладок Chrome</button>
+            <button id="settingsImportFileBtn" type="button" class="btn ghost" data-i18n="importFromFile">Импорт из файла браузера (.html)…</button>
+          </div>
+        </section>
+
         <menu>
           <button value="cancel" class="btn ghost"><span data-i18n="cancel">Отмена</span></button>
           <button id="saveGeneralSettingsBtn" type="button" class="btn primary"><span data-i18n="save">Сохранить</span></button>
@@ -388,6 +400,46 @@
       </form>
     </dialog>
 
+
+    <dialog id="welcomeDialog">
+      <form method="dialog" class="dialog-card welcome-dialog">
+        <div class="welcome-head">
+          <h3 data-i18n="welcomeTitle">Добро пожаловать в Sqwizzey Tab</h3>
+          <p data-i18n="welcomeSubtitle">Новая вкладка — это доски с закладками. С чего начнём?</p>
+        </div>
+
+        <div class="welcome-actions">
+          <button id="welcomeImportChromeBtn" type="button" class="welcome-card">
+            <span class="ion-icon welcome-card-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 80v240"/><path d="M168 232l88 88 88-88"/><path d="M96 368v32a32 32 0 0 0 32 32h256a32 32 0 0 0 32-32v-32"/></svg></span>
+            <span class="welcome-card-text">
+              <strong data-i18n="welcomeImportChrome">Импорт закладок Chrome</strong>
+              <small data-i18n="welcomeImportChromeDesc">Перенести папки закладок Chrome как доски</small>
+            </span>
+          </button>
+
+          <button id="welcomeImportFileBtn" type="button" class="welcome-card">
+            <span class="ion-icon welcome-card-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><rect x="80" y="112" width="352" height="80" rx="16"/><path d="M112 192v208h288V192"/><path d="M208 272h96"/></svg></span>
+            <span class="welcome-card-text">
+              <strong data-i18n="welcomeImportFile">Импорт из другого браузера</strong>
+              <small data-i18n="welcomeImportFileDesc">Файл закладок .html из Firefox, Edge, Opera, Safari</small>
+            </span>
+          </button>
+
+          <button id="welcomeStartFreshBtn" type="button" class="welcome-card">
+            <span class="ion-icon welcome-card-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 112v288"/><path d="M112 256h288"/></svg></span>
+            <span class="welcome-card-text">
+              <strong data-i18n="welcomeStartFresh">Начать с чистого листа</strong>
+              <small data-i18n="welcomeStartFreshDesc">Пустая доска — добавишь закладки сам</small>
+            </span>
+          </button>
+        </div>
+
+        <div id="welcomeSyncStatus" class="welcome-sync-status" data-state="checking">
+          <span class="welcome-sync-dot" aria-hidden="true"></span>
+          <span id="welcomeSyncText" data-i18n="syncChecking">Проверяю синхронизацию…</span>
+        </div>
+      </form>
+    </dialog>
 
     <div id="toast" class="toast"></div>
   </div>
