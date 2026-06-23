@@ -203,6 +203,7 @@ function defaultState() {
       hideExtraBookmarks: true,
       visibleBookmarks: 10,
       shortenTitles: true,
+      animations: true,
       primaryColor: "#D49A57",
       boardColor: "#18231F",
       boardOpacity: 75,

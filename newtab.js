@@ -44,6 +44,7 @@ const el = {
   hideExtraField: document.getElementById("hideExtraField"),
   visibleBookmarksField: document.getElementById("visibleBookmarksField"),
   shortenTitlesField: document.getElementById("shortenTitlesField"),
+  animationsField: document.getElementById("animationsField"),
 
   settingsDialog: document.getElementById("settingsDialog"),
   wallpapersGrid: document.getElementById("wallpapersGrid"),
@@ -136,6 +137,8 @@ const I18N = {
     visibleBookmarksDesc: "Сколько закладок показывать перед скрытием остальных",
     shortenTitles: "Сокращать длинные названия",
     shortenTitlesDesc: "Показывает длинные названия в одну строку с многоточием",
+    animations: "Плавные анимации",
+    animationsDesc: "Мягкие переходы и появление элементов (уважает системную настройку «уменьшить движение»)",
     dark: "Тёмная",
     light: "Светлая",
     starterWallpapers: "Фоны",
@@ -211,6 +214,8 @@ const I18N = {
     visibleBookmarksDesc: "Choose how many bookmarks are shown before hiding the rest",
     shortenTitles: "Shorten long titles",
     shortenTitlesDesc: "Show titles on one line with ellipsis",
+    animations: "Smooth animations",
+    animationsDesc: "Soft transitions and element reveals (respects the system “reduce motion” setting)",
     dark: "Dark",
     light: "Light",
     starterWallpapers: "Starter wallpapers",
@@ -368,6 +373,9 @@ async function init() {
   bindEvents();
   preloadFaviconsOnce();
   renderAll();
+  // Одноразовое мягкое появление досок при загрузке (CSS снимет дёрганье при обычных ре-рендерах).
+  document.body.classList.add("boards-intro");
+  setTimeout(() => document.body.classList.remove("boards-intro"), 900);
   appReady = true; // инициализация завершена — live onChanged теперь может применять удалённые изменения
   await maybeOpenImportOnboarding();
 }
@@ -589,6 +597,7 @@ async function applySettings() {
   document.body.classList.toggle("compact", settings.density === "compact" || settings.compactMode === true);
   document.body.classList.toggle("group-tools", settings.groupTools === true);
   document.body.classList.toggle("shorten-titles", settings.shortenTitles !== false);
+  document.body.classList.toggle("anim-enabled", settings.animations !== false);
 
   const accent = settings.primaryColor || settings.accent || (isLight ? "#7E8584" : "#D49A57");
   const accentText = hexLuminance(accent) > 155 ? "#151815" : "#ffffff";
@@ -2328,6 +2337,7 @@ function openGeneralSettings() {
   el.hideExtraField.checked = state.settings.hideExtraBookmarks === true;
   el.visibleBookmarksField.value = String(state.settings.visibleBookmarks || 10);
   el.shortenTitlesField.checked = state.settings.shortenTitles !== false;
+  if (el.animationsField) el.animationsField.checked = state.settings.animations !== false;
   updateSyncStatusUI();
   el.generalSettingsDialog.showModal();
 }
@@ -2341,6 +2351,7 @@ async function saveGeneralSettings(event) {
   state.settings.hideExtraBookmarks = el.hideExtraField.checked;
   state.settings.visibleBookmarks = Number(el.visibleBookmarksField.value) || 10;
   state.settings.shortenTitles = el.shortenTitlesField.checked;
+  if (el.animationsField) state.settings.animations = el.animationsField.checked;
 
   await persist();
   await applySettings();
