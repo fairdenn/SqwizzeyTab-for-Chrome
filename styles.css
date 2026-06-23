@@ -16615,6 +16615,34 @@ body.light .board-drop-gap.empty-col-gap.empty-col-gap.drop-active {
 }
 
 /* ====================================================
+   SQWIZZEY DIALOG GLASS UNIFY v2.9.82
+   Окно правки вкладки (#pageDialog) и доски (#boardDialog) выглядели
+   плотнее остальных: «glass unify» (v2.9.35, L10511) перечислял
+   importBookmarks/generalSettings/deletePage/settings, но pageDialog и
+   boardDialog пропустил — они оставались на плотном rgba(8,12,18,.35).
+   Приводим их к тому же полупрозрачному стеклу «под доску» (формула 1-в-1
+   с L10515), чтобы прозрачность совпадала с окном Настроек/Стиля.
+   ==================================================== */
+#pageDialog .dialog-card,
+#boardDialog .dialog-card {
+  background: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
+  background-color: rgba(var(--board-rgb), var(--board-opacity, .25)) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow) !important;
+  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+}
+body.light #pageDialog .dialog-card,
+body.light #boardDialog .dialog-card {
+  background: rgba(255, 255, 255, .35) !important;
+  background-color: rgba(255, 255, 255, .35) !important;
+  border: 1px solid rgba(18, 24, 26, .14) !important;
+  box-shadow: 0 24px 78px rgba(0, 0, 0, .16) !important;
+  backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(var(--board-blur, 11px)) saturate(132%) !important;
+}
+
+/* ====================================================
    SQWIZZEY PAGE-MENU TEXT FIX v2.9.81
    Косяк 2: пункты page-меню обрезались до «П.»/«У.».
    Причина: иконки в page-меню скрыты (.ion-icon{display:none}), но grid
