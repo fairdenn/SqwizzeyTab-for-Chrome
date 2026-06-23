@@ -16531,22 +16531,16 @@ body.light .col-add-board-btn {
     to { opacity: 1; }
   }
 
-  /* Мягкая плавность hover-состояний (только цвета/тени, без сдвига геометрии) */
-  body.anim-enabled .bookmark-link,
-  body.anim-enabled .icon-btn,
-  body.anim-enabled .square-btn,
-  body.anim-enabled .page-pill,
-  body.anim-enabled .btn {
-    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 180ms ease;
-  }
+  /* Плавность hover уже задана базовым правилом транзишенов выше — отдельный
+     блок не нужен (его всё равно перебивает !important в основном каскаде). */
 
-  /* Появление тоста */
+  /* Появление тоста (сохраняем горизонтальное центрирование translateX(-50%)) */
   body.anim-enabled .toast.show {
     animation: sqw-toast-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   @keyframes sqw-toast-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 }
 

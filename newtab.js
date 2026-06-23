@@ -173,8 +173,8 @@ const I18N = {
     welcomeStartFreshDesc: "Пустая доска — добавишь закладки сам",
     syncSection: "Синхронизация и данные",
     syncChecking: "Проверяю синхронизацию…",
-    syncOn: "Синхронизация через Google-аккаунт включена. Данные синхронизируются между устройствами, где вы вошли в Chrome.",
-    syncOff: "Синхронизация недоступна. Войдите в аккаунт Chrome и включите синхронизацию расширений в настройках браузера.",
+    syncOn: "Облако Chrome подключено. На устройствах, где вы вошли в тот же аккаунт Chrome и включили синхронизацию расширений, доски синхронизируются автоматически.",
+    syncOff: "Облако недоступно — данные сохраняются локально на этом устройстве.",
     importSelected: "Импортировать выбранное",
     skip: "Пропустить",
     bookmarksCount: "закладок",
@@ -253,8 +253,8 @@ const I18N = {
     welcomeStartFreshDesc: "An empty board — add bookmarks yourself",
     syncSection: "Sync & data",
     syncChecking: "Checking sync…",
-    syncOn: "Sync via your Google account is on. Data syncs across devices where you're signed into Chrome.",
-    syncOff: "Sync unavailable. Sign into Chrome and enable extension sync in your browser settings.",
+    syncOn: "Chrome cloud is connected. On devices where you're signed into the same Chrome account with extension sync enabled, your boards sync automatically.",
+    syncOff: "Cloud unavailable — data is stored locally on this device.",
     importSelected: "Import selected",
     skip: "Skip",
     bookmarksCount: "bookmarks",
@@ -416,9 +416,9 @@ function bindEvents() {
     el.welcomeDialog?.close();
     openImportDialog(true);
   });
-  document.getElementById("welcomeImportFileBtn")?.addEventListener("click", async () => {
-    await markOnboardingDone();
-    el.welcomeDialog?.close();
+  document.getElementById("welcomeImportFileBtn")?.addEventListener("click", () => {
+    // welcome НЕ закрываем здесь: если отменить выбор файла, экран должен остаться.
+    // Закрытие и отметка онбординга — в handleBookmarkFileImport, когда файл реально выбран.
     document.getElementById("importBookmarksFileField")?.click();
   });
   document.getElementById("welcomeStartFreshBtn")?.addEventListener("click", async () => {
@@ -1698,18 +1698,27 @@ function openWelcomeDialog() {
 // Определяет доступность синхронизации через Google-аккаунт и обновляет статус-блоки
 // (в welcome-диалоге и в общих настройках).
 async function updateSyncStatusUI() {
-  let ok = false;
+  // Статус отражает реальную успешность записи в облако, а не просто наличие API.
+  // (getBytesInUse резолвится даже когда пользователь не вошёл в Chrome — это не доказывает синхронизацию.)
   try {
     if (typeof chrome !== "undefined" && chrome?.storage?.sync) {
-      await chrome.storage.sync.getBytesInUse(null); // резолвится → sync API доступен
-      ok = (typeof syncStatus !== "undefined" && syncStatus) ? syncStatus.available !== false : true;
+      await syncStore.flush?.(); // дослать отложенную запись — она выставит syncStatus.available
+      if (typeof syncStatus !== "undefined" && syncStatus && syncStatus.available === null) {
+        try {
+          await chrome.storage.sync.set({ [STORAGE_PREFIX + "probe"]: Date.now() });
+          syncStatus.available = true;
+        } catch {
+          syncStatus.available = false;
+        }
+      }
     }
-  } catch {
-    ok = false;
-  }
+  } catch {}
 
-  const text = ok ? t("syncOn") : t("syncOff");
-  const stateAttr = ok ? "on" : "off";
+  const available = (typeof syncStatus !== "undefined" && syncStatus) ? syncStatus.available : null;
+  let stateAttr, text;
+  if (available === true) { stateAttr = "on"; text = t("syncOn"); }
+  else if (available === false) { stateAttr = "off"; text = t("syncOff"); }
+  else { stateAttr = "checking"; text = t("syncChecking"); }
 
   [["welcomeSyncStatus", "welcomeSyncText"], ["settingsSyncStatus", "settingsSyncText"]].forEach(([boxId, textId]) => {
     const box = document.getElementById(boxId);
@@ -1859,6 +1868,11 @@ async function handleBookmarkFileImport(event) {
   const file = input.files?.[0];
   input.value = "";
   if (!file) return;
+
+  // Файл выбран — закрываем welcome/настройки (чтобы import-диалог не стекался поверх) и отмечаем онбординг.
+  markOnboardingDone().catch(console.error);
+  try { if (el.welcomeDialog?.open) el.welcomeDialog.close(); } catch {}
+  try { if (el.generalSettingsDialog?.open) el.generalSettingsDialog.close(); } catch {}
 
   const isEn = state.settings.language === "en";
 
@@ -3318,6 +3332,7 @@ if (typeof chrome !== "undefined" && chrome?.storage?.onChanged) {
         }
         ensureActivePage();
         ensureValidWallpaper();
+        document.body.classList.remove("boards-intro"); // не запускать intro-анимацию заново на удалённом ре-рендере
         await applySettings();
         applyI18n();
         renderAll();
