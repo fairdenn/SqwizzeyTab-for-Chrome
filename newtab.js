@@ -155,6 +155,9 @@ const I18N = {
     search: "поиск по закладкам, доскам и страницам...",
     importChromeBookmarks: "Импорт закладок Chrome",
     importChromeBookmarksDesc: "Выбери папки, которые нужно импортировать как доски на текущую страницу:",
+    importFromFile: "Импорт из файла браузера (.html)…",
+    importFromFileTitle: "Импорт из файла браузера",
+    importFromFileDesc: "Выбери папки из файла закладок, которые импортировать как доски на текущую страницу:",
     importSelected: "Импортировать выбранное",
     skip: "Пропустить",
     bookmarksCount: "закладок",
@@ -218,6 +221,9 @@ const I18N = {
     search: "search bookmarks, boards and pages...",
     importChromeBookmarks: "Import Chrome Bookmarks",
     importChromeBookmarksDesc: "Select folders to import as boards on the current page:",
+    importFromFile: "Import from browser file (.html)…",
+    importFromFileTitle: "Import from browser file",
+    importFromFileDesc: "Select folders from the bookmark file to import as boards on the current page:",
     importSelected: "Import selected",
     skip: "Skip",
     bookmarksCount: "bookmarks",
@@ -365,6 +371,10 @@ function bindEvents() {
   document.getElementById("saveGeneralSettingsBtn").addEventListener("click", saveGeneralSettings);
   document.getElementById("importSelectedBtn").addEventListener("click", importSelectedBookmarkFolders);
   document.getElementById("skipImportBtn").addEventListener("click", skipBookmarkImport);
+  document.getElementById("importFromFileBtn")?.addEventListener("click", () => {
+    document.getElementById("importBookmarksFileField")?.click();
+  });
+  document.getElementById("importBookmarksFileField")?.addEventListener("change", handleBookmarkFileImport);
   el.fetchBookmarkTitleBtn.addEventListener("click", fetchTitleForBookmarkEdit);
   el.saveBookmarkEditBtn.addEventListener("click", saveBookmarkEdit);
   el.bookmarkDescriptionField.addEventListener("input", updateBookmarkDescriptionCounter);
@@ -1632,6 +1642,11 @@ async function openImportDialog(isOnboarding = false) {
   });
 
   el.importBookmarksDialog.dataset.onboarding = isOnboarding ? "true" : "false";
+  el.importBookmarksDialog.dataset.source = "chrome";
+  const titleEl = document.getElementById("importDialogTitle");
+  const descEl = document.getElementById("importDialogDesc");
+  if (titleEl) titleEl.textContent = t("importChromeBookmarks");
+  if (descEl) descEl.textContent = t("importChromeBookmarksDesc");
   el.importFoldersList.innerHTML = `<div class="import-empty">Загружаю папки закладок...</div>`;
 
   try {
@@ -1698,16 +1713,18 @@ async function importSelectedBookmarkFolders(event) {
   }
 
   selected.forEach(folder => {
-    page.boards.push({
+    const board = {
       id: uid("board"),
       title: folder.title,
-      bookmarkFolderId: folder.id,
       links: folder.links.map(link => ({
         id: uid("link"),
         title: link.title,
         url: link.url
       }))
-    });
+    };
+    // Доски из файла другого браузера не привязываем к папке Chrome (id синтетический).
+    if (!folder.external) board.bookmarkFolderId = folder.id;
+    page.boards.push(board);
   });
 
   state.onboarding = { ...(state.onboarding || {}), importAsked: true };
@@ -1723,6 +1740,47 @@ async function skipBookmarkImport(event) {
   state.onboarding = { ...(state.onboarding || {}), importAsked: true };
   await persist();
   el.importBookmarksDialog.close();
+}
+
+// Импорт закладок из файла другого браузера (Netscape .html: Firefox/Edge/Opera/Safari/Chrome).
+async function handleBookmarkFileImport(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  input.value = "";
+  if (!file) return;
+
+  const isEn = state.settings.language === "en";
+
+  let text = "";
+  try { text = await file.text(); }
+  catch { return toast(isEn ? "Could not read the file." : "Не удалось прочитать файл."); }
+
+  let folders = [];
+  try { folders = parseNetscapeBookmarks(text); }
+  catch (e) { console.warn("parse bookmarks file failed", e); }
+
+  // Переключаем диалог в режим файла (меняем заголовок/описание).
+  el.importBookmarksDialog.dataset.source = "file";
+  const titleEl = document.getElementById("importDialogTitle");
+  const descEl = document.getElementById("importDialogDesc");
+  if (titleEl) titleEl.textContent = t("importFromFileTitle");
+  if (descEl) descEl.textContent = t("importFromFileDesc");
+
+  if (!folders.length) {
+    const empty = document.createElement("div");
+    empty.className = "import-empty";
+    empty.textContent = isEn
+      ? "No bookmarks found in the file. Export bookmarks from your browser as HTML and try again."
+      : "В файле не найдено закладок. Экспортируй закладки из браузера в HTML и попробуй снова.";
+    el.importFoldersList.replaceChildren(empty);
+    el.importFoldersList._folders = [];
+    if (!el.importBookmarksDialog.open) el.importBookmarksDialog.showModal();
+    return;
+  }
+
+  renderImportFolders(folders);
+  if (!el.importBookmarksDialog.open) el.importBookmarksDialog.showModal();
+  toast(isEn ? `Folders found: ${folders.length}` : `Найдено папок: ${folders.length}`);
 }
 
 async function importBookmarksToActivePage() {

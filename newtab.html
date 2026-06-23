@@ -321,12 +321,17 @@
       <form method="dialog" class="dialog-card import-dialog">
         <div class="dialog-head compact-head">
           <div>
-            <h3 data-i18n="importChromeBookmarks">Импорт закладок Chrome</h3>
-            <p data-i18n="importChromeBookmarksDesc">Выбери папки, которые нужно импортировать как доски на текущую страницу:</p>
+            <h3 id="importDialogTitle" data-i18n="importChromeBookmarks">Импорт закладок Chrome</h3>
+            <p id="importDialogDesc" data-i18n="importChromeBookmarksDesc">Выбери папки, которые нужно импортировать как доски на текущую страницу:</p>
           </div>
         </div>
 
         <div id="importFoldersList" class="import-folders-list"></div>
+
+        <div class="import-file-row">
+          <button id="importFromFileBtn" type="button" class="btn ghost" data-i18n="importFromFile">Импорт из файла браузера (.html)…</button>
+          <input id="importBookmarksFileField" type="file" accept=".html,.htm,text/html" style="display:none" />
+        </div>
 
         <menu>
           <button id="skipImportBtn" type="button" class="btn ghost">

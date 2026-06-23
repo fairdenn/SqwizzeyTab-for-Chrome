@@ -549,6 +549,82 @@ async function getBookmarkFoldersForImport() {
   return folders;
 }
 
+// Декод HTML-сущностей (для импорта из файла закладок). &amp; — последним.
+function decodeEntities(text) {
+  return String(text || "")
+    .replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"').replace(/&#0?39;/g, "'").replace(/&#x27;/gi, "'")
+    .replace(/&apos;/gi, "'").replace(/&amp;/gi, "&");
+}
+
+// Парсер закладок в формате Netscape Bookmark File — экспорт Chrome/Firefox/Edge/Opera/Safari.
+// Возвращает плоский список папок с прямыми ссылками (формат как getBookmarkFoldersForImport),
+// чтобы переиспользовать UI выбора. Чистые строки (без DOMParser) — работает и вне браузера.
+function parseNetscapeBookmarks(html) {
+  const text = String(html || "");
+  const tokenRe = /<\s*DL\s*>|<\/\s*DL\s*>|<\s*H3[^>]*>([\s\S]*?)<\/\s*H3\s*>|<\s*A\s+[^>]*?HREF\s*=\s*"([^"]*)"[^>]*>([\s\S]*?)<\/\s*A\s*>/gi;
+
+  const folders = [];
+  const stack = [];
+  let pendingName = null;
+  let rootOpened = false;
+  let seq = 0;
+
+  const pathNames = () => stack.map(f => f.title);
+
+  function pushFolder(name, pathArr) {
+    stack.push({
+      id: `file_folder_${seq++}`,
+      external: true,
+      title: name || "Без названия",
+      path: pathArr.filter(Boolean).join(" / ") || name || "Без названия",
+      count: 0,
+      directCount: 0,
+      links: []
+    });
+  }
+
+  function closeFolder() {
+    const finished = stack.pop();
+    if (finished && finished.links.length) {
+      finished.count = finished.links.length;
+      finished.directCount = finished.links.length;
+      folders.push(finished);
+    }
+  }
+
+  for (const m of text.matchAll(tokenRe)) {
+    const token = m[0];
+    if (/^<\s*DL/i.test(token)) {
+      if (pendingName !== null) {
+        const name = decodeEntities(pendingName).trim();
+        pushFolder(name, [...pathNames(), name]);
+        pendingName = null;
+      } else if (!rootOpened) {
+        pushFolder("Импортированные закладки", ["Импортированные закладки"]);
+        rootOpened = true;
+      } else {
+        pushFolder("Без названия", [...pathNames(), "Без названия"]);
+      }
+    } else if (/^<\/\s*DL/i.test(token)) {
+      closeFolder();
+    } else if (m[1] !== undefined) {
+      pendingName = m[1]; // <H3> — имя следующей папки
+    } else if (m[2] !== undefined) {
+      const url = decodeEntities(m[2]).trim();
+      if (!/^(https?:|ftp:|file:)/i.test(url)) continue; // пропускаем javascript:/place:/data:/пустые
+      const title = decodeEntities(m[3]).replace(/<[^>]+>/g, "").trim() || url;
+      const top = stack[stack.length - 1];
+      if (top) top.links.push({ title, url });
+    }
+  }
+
+  // Кривой экспорт без баланса </DL> — досбрасываем оставшийся стек.
+  while (stack.length) closeFolder();
+
+  return folders;
+}
+
 async function loadState() {
   const synced = await syncStore.get();
   let state = migrateState(synced);
