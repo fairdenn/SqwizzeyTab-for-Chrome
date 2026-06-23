@@ -5,7 +5,9 @@ const CHUNK_KEY = STORAGE_PREFIX + "chunk_";
 const LOCAL_WALLPAPER_KEY = STORAGE_PREFIX + "local_wallpaper";
 const LOCAL_USER_WALLPAPERS_KEY = STORAGE_PREFIX + "user_wallpapers";
 const LOCAL_STATE_FALLBACK_KEY = STORAGE_PREFIX + "state_local_fallback";
+const LOCAL_STATE_PRIMARY_KEY = STORAGE_PREFIX + "state_local"; // основное локальное зеркало (local-first)
 const CHUNK_SIZE = 3500;
+const SYNC_DEBOUNCE_MS = 1500;
 const TRASH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const STARTER_WALLPAPERS = [
@@ -260,71 +262,130 @@ function chunkStringByBytes(value, maxBytes) {
   return chunks;
 }
 
+// Низкоуровневое чтение state из чанков chrome.storage.sync. null если пусто/битое.
+async function readSyncChunks() {
+  const metaObj = await chrome.storage.sync.get(META_KEY);
+  const meta = metaObj[META_KEY];
+  if (!meta || !meta.chunks) return null;
+  const keys = Array.from({ length: meta.chunks }, (_, i) => CHUNK_KEY + i);
+  const chunkObj = await chrome.storage.sync.get(keys);
+  const raw = keys.map(key => chunkObj[key] || "").join("");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Cannot parse synced state", error);
+    return null;
+  }
+}
+
+// Низкоуровневая запись state в чанки chrome.storage.sync. Бросает при ошибке квоты/лимита.
+async function writeSyncChunks(safeState) {
+  const raw = JSON.stringify(safeState);
+  const chunks = chunkStringByBytes(raw, CHUNK_SIZE);
+
+  const previous = await chrome.storage.sync.get(META_KEY);
+  const previousChunks = previous[META_KEY]?.chunks || 0;
+  const toRemove = [];
+  for (let i = chunks.length; i < previousChunks; i++) toRemove.push(CHUNK_KEY + i);
+  if (toRemove.length) await chrome.storage.sync.remove(toRemove);
+
+  const payload = {
+    [META_KEY]: { chunks: chunks.length, updatedAt: safeState.updatedAt, version: 3 }
+  };
+  chunks.forEach((chunk, i) => { payload[CHUNK_KEY + i] = chunk; });
+
+  await chrome.storage.sync.set(payload);
+}
+
+// Публичный статус синхронизации — для UI (onboarding / настройки).
+const syncStatus = {
+  supported: !!(typeof chrome !== "undefined" && chrome.storage && chrome.storage.sync),
+  available: null,    // удалась ли последняя запись в sync (true/false/null=ещё не пробовали)
+  lastError: "",
+  lastSyncedAt: 0,
+  bytesInUse: 0,
+  quota: 102400
+};
+
+let _syncWriteTimer = null;
+let _pendingSyncState = null;
+
+function scheduleSyncWrite(safeState) {
+  _pendingSyncState = safeState;
+  clearTimeout(_syncWriteTimer);
+  _syncWriteTimer = setTimeout(flushSyncWrite, SYNC_DEBOUNCE_MS);
+}
+
+async function flushSyncWrite() {
+  const safeState = _pendingSyncState;
+  if (!safeState) return;
+  _pendingSyncState = null;
+  try {
+    await writeSyncChunks(safeState);
+    syncStatus.available = true;
+    syncStatus.lastError = "";
+    syncStatus.lastSyncedAt = safeState.updatedAt;
+    try { syncStatus.bytesInUse = await chrome.storage.sync.getBytesInUse(null); } catch {}
+  } catch (error) {
+    syncStatus.available = false;
+    syncStatus.lastError = String(error?.message || error);
+    console.warn("chrome.storage.sync write failed (state сохранён локально)", error);
+  }
+}
+
+// Local-first хранилище: пишем мгновенно в local, в sync (Google-аккаунт) — с дебаунсом.
 const syncStore = {
   async get() {
+    let localState = null;
+    let syncState = null;
+
     try {
-      const metaObj = await chrome.storage.sync.get(META_KEY);
-      const meta = metaObj[META_KEY];
-      if (meta && meta.chunks) {
-        const keys = Array.from({ length: meta.chunks }, (_, i) => CHUNK_KEY + i);
-        const chunkObj = await chrome.storage.sync.get(keys);
-        const raw = keys.map(key => chunkObj[key] || "").join("");
-        if (raw) {
-          try {
-            return JSON.parse(raw);
-          } catch (error) {
-            console.error("Cannot parse synced state", error);
-          }
-        }
-      }
+      const o = await chrome.storage.local.get(LOCAL_STATE_PRIMARY_KEY);
+      localState = o[LOCAL_STATE_PRIMARY_KEY] || null;
     } catch (error) {
-      console.warn("Cannot read chrome.storage.sync state, using local fallback", error);
+      console.warn("Cannot read local state mirror", error);
+    }
+
+    // Миграция со старого fallback-ключа.
+    if (!localState) {
+      try {
+        const old = await chrome.storage.local.get(LOCAL_STATE_FALLBACK_KEY);
+        localState = old[LOCAL_STATE_FALLBACK_KEY] || null;
+      } catch {}
     }
 
     try {
-      const localObj = await chrome.storage.local.get(LOCAL_STATE_FALLBACK_KEY);
-      return localObj[LOCAL_STATE_FALLBACK_KEY] || null;
+      syncState = await readSyncChunks();
     } catch (error) {
-      console.error("Cannot read local state fallback", error);
-      return null;
+      console.warn("Cannot read chrome.storage.sync state", error);
     }
+
+    // Берём более свежий по updatedAt (sync при равенстве — он каноничен между устройствами).
+    if (localState && syncState) {
+      return (syncState.updatedAt || 0) >= (localState.updatedAt || 0) ? syncState : localState;
+    }
+    return syncState || localState || null;
   },
 
   async set(state) {
     const safeState = JSON.parse(JSON.stringify({ ...state, updatedAt: Date.now() }));
-    const raw = JSON.stringify(safeState);
-    const chunks = chunkStringByBytes(raw, CHUNK_SIZE);
-
+    // 1) Немедленно и надёжно в local (без квоты sync, без rate-limit).
     try {
-      const previous = await chrome.storage.sync.get(META_KEY);
-      const previousChunks = previous[META_KEY]?.chunks || 0;
-      const toRemove = [];
-      for (let i = chunks.length; i < previousChunks; i++) {
-        toRemove.push(CHUNK_KEY + i);
-      }
-      if (toRemove.length) await chrome.storage.sync.remove(toRemove);
-
-      const payload = {
-        [META_KEY]: {
-          chunks: chunks.length,
-          updatedAt: Date.now(),
-          version: 3
-        }
-      };
-      chunks.forEach((chunk, i) => {
-        payload[CHUNK_KEY + i] = chunk;
-      });
-
-      await chrome.storage.sync.set(payload);
-      try {
-        await chrome.storage.local.remove(LOCAL_STATE_FALLBACK_KEY);
-      } catch {}
-      return true;
+      await chrome.storage.local.set({ [LOCAL_STATE_PRIMARY_KEY]: safeState });
+      try { await chrome.storage.local.remove(LOCAL_STATE_FALLBACK_KEY); } catch {}
     } catch (error) {
-      console.warn("chrome.storage.sync quota/write failed, saving state locally", error);
-      await chrome.storage.local.set({ [LOCAL_STATE_FALLBACK_KEY]: safeState });
-      return true;
+      console.error("local state save failed", error);
     }
+    // 2) В sync (между устройствами через Google-аккаунт) — отложенно, чтобы не упереться в лимиты.
+    scheduleSyncWrite(safeState);
+    return true;
+  },
+
+  // Принудительно дослать отложенную запись в sync (перед скрытием/закрытием вкладки).
+  async flush() {
+    clearTimeout(_syncWriteTimer);
+    await flushSyncWrite();
   }
 };
 

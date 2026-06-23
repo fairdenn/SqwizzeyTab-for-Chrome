@@ -3113,3 +3113,39 @@ document.addEventListener("visibilitychange", () => {
 });
 window.addEventListener("focus", scheduleBookmarkResync);
 
+// === LIVE SYNC: подхватываем изменения с другого устройства (через Google-аккаунт) ===
+if (typeof chrome !== "undefined" && chrome?.storage?.onChanged) {
+  let _applyingRemote = false;
+  chrome.storage.onChanged.addListener(async (changes, area) => {
+    if (area !== "sync" || !changes[META_KEY]) return;
+    const incoming = changes[META_KEY].newValue;
+    if (!incoming || !incoming.updatedAt) return;
+    if (_applyingRemote) return;
+    if (incoming.updatedAt <= (state?.updatedAt || 0)) return; // наша же запись или старее
+
+    _applyingRemote = true;
+    try {
+      const fresh = await syncStore.get();
+      if (fresh && (fresh.updatedAt || 0) > (state?.updatedAt || 0)) {
+        state = migrateState(fresh);
+        ensureActivePage();
+        ensureValidWallpaper();
+        await applySettings();
+        applyI18n();
+        renderAll();
+        toast(state.settings?.language === "en" ? "Synced from another device." : "Подтянуто с другого устройства.");
+      }
+    } catch (e) {
+      console.warn("live sync apply failed", e);
+    } finally {
+      _applyingRemote = false;
+    }
+  });
+}
+
+// Дослать отложенную sync-запись перед скрытием/закрытием вкладки.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") { try { syncStore.flush(); } catch {} }
+});
+window.addEventListener("pagehide", () => { try { syncStore.flush(); } catch {} });
+

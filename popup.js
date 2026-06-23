@@ -56,6 +56,7 @@ async function addCurrentTab() {
   });
 
   await syncStore.set(state);
+  await syncStore.flush?.();
   renderBoards();
   setStatus("Вкладка добавлена.");
 }
@@ -79,6 +80,7 @@ async function saveWindow() {
   });
 
   await syncStore.set(state);
+  await syncStore.flush?.();
   renderBoards();
   setStatus("Окно сохранено как новая доска.");
 }
