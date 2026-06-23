@@ -107,7 +107,12 @@ const ICONS = {
   chevron: `<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M128 192l128 128 128-128"/></svg>`,
   settings: `<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M256 176a80 80 0 1 0 0 160 80 80 0 0 0 0-160z"/><path d="M384 256a133 133 0 0 0-2-24l48-37-48-83-56 23a137 137 0 0 0-42-24L276 48h-96l-8 63a137 137 0 0 0-42 24l-56-23-48 83 48 37a133 133 0 0 0 0 48l-48 37 48 83 56-23a137 137 0 0 0 42 24l8 63h96l8-63a137 137 0 0 0 42-24l56 23 48-83-48-37a133 133 0 0 0 2-24z"/></svg>`,
   import: `<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M256 80v240"/><path d="M168 232l88 88 88-88"/><path d="M96 368v32a32 32 0 0 0 32 32h256a32 32 0 0 0 32-32v-32"/></svg>`,
-  menu: `<svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="128" r="24"/><circle cx="256" cy="256" r="24"/><circle cx="256" cy="384" r="24"/></svg>`
+  menu: `<svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="128" r="24"/><circle cx="256" cy="256" r="24"/><circle cx="256" cy="384" r="24"/></svg>`,
+  search: `<svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="216" cy="216" r="120"/><path d="M300 300l112 112"/></svg>`,
+  saveWindow: `<svg viewBox="0 0 512 512" aria-hidden="true"><rect x="96" y="112" width="320" height="288" rx="32"/><path d="M256 184v128"/><path d="M192 248h128"/></svg>`,
+  grid: `<svg viewBox="0 0 512 512" aria-hidden="true"><rect x="104" y="104" width="136" height="136" rx="16"/><rect x="272" y="104" width="136" height="136" rx="16"/><rect x="104" y="272" width="136" height="136" rx="16"/><rect x="272" y="272" width="136" height="136" rx="16"/></svg>`,
+  export: `<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M256 320V96"/><path d="M168 184l88-88 88 88"/><path d="M96 360v40a32 32 0 0 0 32 32h256a32 32 0 0 0 32-32v-40"/></svg>`,
+  fileImport: `<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M288 64H160a32 32 0 0 0-32 32v320a32 32 0 0 0 32 32h192a32 32 0 0 0 32-32V160z"/><path d="M288 64v96h96"/><path d="M256 240v112"/><path d="M212 308l44 44 44-44"/></svg>`
 };
 
 function icon(name) {
@@ -352,10 +357,27 @@ function hydrateStaticIcons() {
   };
 
   set("addPageBtn", "add");
+  set("focusSearchBtn", "search");
+  set("saveTabsBtn", "saveWindow");
+  set("tabsBtn", "grid");
   set("trashBtn", "trash");
   set("importBookmarksBtn", "import");
+  set("exportBtn", "export");
   set("settingsBtn", "settings");
   set("wallpaperQuickBtn", "image");
+
+  // importFile — это <label> с <input type=file> внутри: иконку добавляем
+  // отдельным span (через DOMParser, без innerHTML), input не теряем.
+  const fileLabel = document.querySelector(".float-file");
+  if (fileLabel && !fileLabel.querySelector(".ion-icon")) {
+    [...fileLabel.childNodes].forEach(n => { if (n.nodeType === Node.TEXT_NODE) n.remove(); });
+    const span = document.createElement("span");
+    span.className = "ion-icon";
+    span.setAttribute("aria-hidden", "true");
+    const parsed = new DOMParser().parseFromString(ICONS.fileImport || "", "image/svg+xml").documentElement;
+    if (parsed && parsed.nodeName.toLowerCase() === "svg") span.appendChild(parsed);
+    fileLabel.insertBefore(span, fileLabel.firstChild);
+  }
 }
 
 async function init() {
