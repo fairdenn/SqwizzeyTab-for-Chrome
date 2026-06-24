@@ -16835,10 +16835,29 @@ body.light * { scrollbar-color: rgba(18,24,26,.24) transparent !important; }
   max-height: 40px !important;
   padding: 0 18px !important;
   font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  border-radius: 12px !important;
+  /* одинаковая рамка 1px у обеих → одинаковый бокс; у ghost она видимая,
+     у primary прозрачная, но толщина та же, поэтому primary не «толще» */
+  border: 1px solid transparent !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   box-sizing: border-box !important;
+}
+/* v2.9.93: убираем у primary акцентное свечение/тень — именно ореол делал
+   её ОПТИЧЕСКИ крупнее ghost при одинаковом боксе 120×40. Тень у обеих
+   одинаковая (только лёгкий внутренний блик), геометрия идентична. */
+#wallpaperAdjustDialog menu .btn.primary,
+#wallpaperAdjustDialog menu .btn.ghost,
+#wallpaperAdjustDialog menu .btn:not(.primary) {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+#wallpaperAdjustDialog menu .btn.ghost,
+#wallpaperAdjustDialog menu .btn:not(.primary) {
+  border-color: rgba(255,255,255,.18) !important;
 }
 
 /* ====================================================
