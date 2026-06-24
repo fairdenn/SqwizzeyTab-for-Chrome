@@ -16958,3 +16958,37 @@ body.light * { scrollbar-color: rgba(18,24,26,.24) transparent !important; }
   border-radius: 20px !important;
   background: transparent !important;
 }
+
+/* ===== Toast undo action button (master block) ===== */
+#toast.toast.toast-with-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  pointer-events: auto !important;
+}
+
+#toast.toast .toast-text {
+  display: inline-block !important;
+}
+
+#toast.toast .toast-action {
+  flex: none !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  border: 1px solid var(--accent, #5bd1a8) !important;
+  background: transparent !important;
+  color: var(--accent, #5bd1a8) !important;
+  font: inherit !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  transition: background .15s ease, color .15s ease !important;
+  white-space: nowrap !important;
+}
+
+#toast.toast .toast-action:hover {
+  background: var(--accent, #5bd1a8) !important;
+  color: #0e221d !important;
+}

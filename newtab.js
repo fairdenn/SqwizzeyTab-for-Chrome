@@ -161,6 +161,7 @@ const I18N = {
     language: "Язык",
     clear: "Очистить",
     cancel: "Отмена",
+    undo: "Отменить",
     save: "Сохранить",
     close: "Закрыть",
     addBoard: "＋ Добавить доску",
@@ -242,6 +243,7 @@ const I18N = {
     language: "Language",
     clear: "Clear",
     cancel: "Cancel",
+    undo: "Undo",
     save: "Save",
     close: "Close",
     addBoard: "＋ Add Board",
@@ -1585,7 +1587,11 @@ async function trashLink(boardId, linkId) {
 
   await persist();
   renderBoards();
-  toast("Ссылка перемещена в корзину.");
+  toast("Ссылка перемещена в корзину.", {
+    actionLabel: t("undo"),
+    onAction: () => restoreTrashItem("links", link.id),
+    timeout: 5000
+  });
 }
 
 async function trashBoard(boardId) {
@@ -1604,7 +1610,11 @@ async function trashBoard(boardId) {
 
   await persist();
   renderBoards();
-  toast("Доска в корзине.");
+  toast("Доска в корзине.", {
+    actionLabel: t("undo"),
+    onAction: () => restoreTrashItem("boards", board.id),
+    timeout: 5000
+  });
 }
 
 function openDeletePageDialog(pageId) {
@@ -1650,7 +1660,11 @@ async function performTrashPage(pageId) {
 
   await persist();
   renderAll();
-  toast((state.settings.language || "ru") === "en" ? "Page moved to trash." : "Страница в корзине.");
+  toast((state.settings.language || "ru") === "en" ? "Page moved to trash." : "Страница в корзине.", {
+    actionLabel: t("undo"),
+    onAction: () => restoreTrashItem("pages", page.id),
+    timeout: 5000
+  });
 }
 
 async function trashPage(pageId) {
@@ -2857,11 +2871,34 @@ function decodeHtml(text) {
   return doc.documentElement.textContent || "";
 }
 
-function toast(message) {
-  el.toast.textContent = message;
+function toast(message, opts) {
+  el.toast.textContent = "";
+  el.toast.classList.remove("toast-with-action");
+
+  const text = document.createElement("span");
+  text.className = "toast-text";
+  text.textContent = message;
+  el.toast.appendChild(text);
+
+  const timeout = (opts && typeof opts.timeout === "number") ? opts.timeout : 2300;
+
+  if (opts && opts.actionLabel && typeof opts.onAction === "function") {
+    el.toast.classList.add("toast-with-action");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "toast-action";
+    btn.textContent = opts.actionLabel;
+    btn.addEventListener("click", () => {
+      clearTimeout(toast.timer);
+      el.toast.classList.remove("show");
+      opts.onAction();
+    });
+    el.toast.appendChild(btn);
+  }
+
   el.toast.classList.add("show");
   clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => el.toast.classList.remove("show"), 2300);
+  toast.timer = setTimeout(() => el.toast.classList.remove("show"), timeout);
 }
 
 function escapeHtml(value) {
