@@ -515,7 +515,6 @@ function bindEvents() {
   el.menuLayer.addEventListener("click", event => {
     if (event.target === el.menuLayer) closeMenu();
   });
-  document.addEventListener("keydown", handleGlobalHotkeys);
   document.addEventListener("click", event => {
     if (!event.target.closest(".context-menu") && !event.target.closest("[data-menu-trigger]")) {
       closeMenu();
