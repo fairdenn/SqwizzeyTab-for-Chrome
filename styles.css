@@ -16902,3 +16902,40 @@ body.light * { scrollbar-color: rgba(18,24,26,.24) transparent !important; }
   margin-bottom: 16px !important;
   background: transparent !important;
 }
+
+/* ====================================================
+   SQWIZZEY DIALOG ROUNDED-CORNER BACKDROP-FILTER FIX v2.9.92
+   Проблема (видно ТОЛЬКО в headful Chrome, реальный GPU-композит):
+   у #settingsDialog и #generalSettingsDialog по углам торчали тёмные
+   квадратные артефакты ЗА скруглённой рамкой. Причина — НЕ внутренняя
+   .dialog-scroll (она прозрачна, bg=rgba(0,0,0,0), radius=0). Причина в
+   самой .dialog-card: backdrop-filter: blur(13px) + border-radius +
+   overflow:hidden. Chromium растрирует слой backdrop-filter в ПРЯМОУГОЛЬНОМ
+   bounding-box и overflow:hidden НЕ обрезает этот фильтр-слой по
+   border-radius — поэтому затемнённый фильтром фон выпирает за скругление
+   квадратными углами.
+   Решение: накладываем mask со скруглённым прямоугольником ровно по
+   радиусу карточки — GPU обязан обрезать ВЕСЬ растр (включая backdrop-filter)
+   по этой маске. Пиним радиус 20px и тень/рамку. Содержимое и скролл целы.
+   ==================================================== */
+#settingsDialog .dialog-card.style-dialog,
+#generalSettingsDialog .dialog-card.general-dialog {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  /* маска со скруглённым прямоугольником: единый слой растеризации,
+     обрезающий backdrop-filter строго по радиусу карточки */
+  -webkit-mask-image: radial-gradient(white, white) !important;
+  mask-image: radial-gradient(white, white) !important;
+  -webkit-mask-clip: padding-box !important;
+  mask-clip: padding-box !important;
+  -webkit-mask-size: 100% 100% !important;
+  mask-size: 100% 100% !important;
+  isolation: isolate !important;
+}
+/* углы внутренней обёртки тоже округляем под радиус карточки (на всякий
+   случай, чтобы при наличии фона у дочерних слоёв квадрат не вылез) */
+#settingsDialog .dialog-card.style-dialog > .dialog-scroll,
+#generalSettingsDialog .dialog-card.general-dialog > .dialog-scroll {
+  border-radius: 20px !important;
+  background: transparent !important;
+}
