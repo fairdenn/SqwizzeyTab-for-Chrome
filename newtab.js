@@ -802,44 +802,9 @@ function createAddBoardZone(alwaysVisible = false) {
 }
 
 
-function getBoardLayoutColumnCount(totalItems = 1) {
-  const itemCount = Math.max(1, Number(totalItems) || 1);
-
-  // v2.9.47: no viewport heuristics here. Daniil asked for four columns on desktop,
-  // and old breakpoint/container logic kept collapsing to three.
-  // CSS will handle shrinking without horizontal scroll.
-  if (itemCount >= 4) return 4;
-  return itemCount;
-}
-
-function createStableBoardColumns(totalItems = 1) {
-  const count = getBoardLayoutColumnCount(totalItems);
-  const perColumn = Math.max(1, Math.ceil(Math.max(1, totalItems) / count));
-  const columns = [];
-
-  el.boardsGrid.innerHTML = "";
-  el.boardsGrid.dataset.columns = String(count);
-  el.boardsGrid.style.setProperty("--actual-board-columns", String(count));
-
-  for (let index = 0; index < count; index += 1) {
-    const column = document.createElement("div");
-    column.className = "board-column";
-    column.dataset.columnIndex = String(index);
-    column.style.setProperty("--column-index", String(index));
-    el.boardsGrid.appendChild(column);
-    columns.push(column);
-  }
-
-  return { columns, perColumn };
-}
-
-function appendBoardLayoutItem(layout, node, index) {
-  // Column-priority: заполняем колонку за колонкой.
-  // Это делает drag-and-drop предсказуемым:
-  // вставка "после board X" в flat-массиве = визуально под board X.
-  const columnIndex = Math.min(layout.columns.length - 1, Math.floor(index / layout.perColumn));
-  layout.columns[columnIndex].appendChild(node);
-}
+// getBoardLayoutColumnCount / createStableBoardColumns / appendBoardLayoutItem:
+// активные версии живут в CLEAN PATCH v2.9.66 ниже (переприсваиваются на загрузке).
+// Прежние объявления удалены как мёртвые — их перекрывало присваивание.
 
 function renderBoards() {
   const query = el.searchInput.value.trim().toLowerCase();
@@ -1121,12 +1086,6 @@ function cleanupLinkSortIndicator() {
     linkSortIndicator.remove();
     linkSortIndicator = null;
   }
-}
-
-
-function cleanupLinkDragUi() {
-  document.querySelectorAll(".bookmark-link").forEach(item => item.classList.remove("link-dragging"));
-  document.querySelectorAll(".board").forEach(item => item.classList.remove("link-drop-target"));
 }
 
 

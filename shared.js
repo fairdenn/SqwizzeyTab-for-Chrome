@@ -98,27 +98,6 @@ function wallpaperCss(wallpaper) {
   return "";
 }
 
-function wallpaperCss(wallpaper) {
-  if (!wallpaper) return "";
-  if (wallpaper.css) return wallpaper.css;
-  if (wallpaper.file) return `url("${chrome.runtime.getURL(wallpaper.file)}")`;
-  return "";
-}
-
-function wallpaperCss(wallpaper) {
-  if (!wallpaper) return "";
-  if (wallpaper.css) return wallpaper.css;
-  if (wallpaper.file) return `url("${chrome.runtime.getURL(wallpaper.file)}")`;
-  return "";
-}
-
-function wallpaperCss(wallpaper) {
-  if (!wallpaper) return "";
-  if (wallpaper.css) return wallpaper.css;
-  if (wallpaper.file) return `url("${chrome.runtime.getURL(wallpaper.file)}")`;
-  return "";
-}
-
 function uid(prefix = "id") {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
 }

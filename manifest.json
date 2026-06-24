@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Sqwizzey Tab",
   "description": "Bookmark manager new tab with Chrome bookmark folder sync.",
-  "version": "2.9.95",
+  "version": "2.9.96",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
