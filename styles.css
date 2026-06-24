@@ -16992,3 +16992,83 @@ body.light * { scrollbar-color: rgba(18,24,26,.24) transparent !important; }
   background: var(--accent, #5bd1a8) !important;
   color: #0e221d !important;
 }
+
+/* ============================================================
+   ЛЁГКИЙ РЕЖИМ (perf-lite) — мастер-блок, держать В КОНЦЕ файла.
+   Отключает backdrop-filter blur (главный потребитель GPU)
+   на досках, окнах, меню и фоне ради экономии батареи.
+
+   ВНИМАНИЕ к специфичности: в override-войне выше самое
+   агрессивное правило blur — `html body.dark .board` (тип+тип+
+   класс+класс+класс = 0,3,2) с !important. Чтобы гарантированно
+   победить ЛЮБОЕ из ~160 правил blur, селекторы ниже подняты до
+   `html body.perf-lite *` и удвоенных классов `.board.board`.
+   ============================================================ */
+
+/* Универсальный сметающий проход: высокая специфичность через
+   html + два псевдо-уровня, бьёт даже `html body.dark .board`. */
+html body.perf-lite *,
+html body.perf-lite *::before,
+html body.perf-lite *::after,
+html body.perf-lite {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Явные ключевые поверхности с удвоением классов — заведомо
+   выше всех конкурирующих правил (доски/окна/меню/фон). */
+html body.perf-lite .board.board,
+html body.perf-lite .add-board-card.add-board-card,
+html body.perf-lite .board-inner.board-inner,
+html body.perf-lite .board-head.board-head,
+html body.perf-lite .dialog-card.dialog-card,
+html body.perf-lite .dialog-scroll.dialog-scroll,
+html body.perf-lite .context-menu.context-menu,
+html body.perf-lite .menu.menu,
+html body.perf-lite .popover.popover,
+html body.perf-lite .toast.toast,
+html body.perf-lite .topbar.topbar,
+html body.perf-lite .search-pop.search-pop,
+html body.perf-lite .bg-layer.bg-layer,
+html body.perf-lite::before,
+html body.perf-lite::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Окна-диалоги: их blur навешан правилами с ID-специфичностью
+   (#pageDialog .dialog-card и т.п.), которые бьют любые классовые
+   селекторы. Поэтому добавляем ID диалога в наш селектор — теперь
+   у нас тоже есть ID, и наш !important выигрывает по специфичности. */
+html body.perf-lite #pageDialog .dialog-card,
+html body.perf-lite #boardDialog .dialog-card,
+html body.perf-lite #generalSettingsDialog .dialog-card,
+html body.perf-lite #settingsDialog .dialog-card,
+html body.perf-lite #importDialog .dialog-card,
+html body.perf-lite #importBookmarksDialog .dialog-card,
+html body.perf-lite #trashDialog .dialog-card,
+html body.perf-lite #deletePageDialog .dialog-card,
+html body.perf-lite #wallpaperAdjustDialog .dialog-card,
+html body.perf-lite #bookmarkEditDialog .dialog-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Опционально облегчаем самые тяжёлые тени у крупных поверхностей */
+html body.perf-lite .board.board,
+html body.perf-lite .dialog-card.dialog-card,
+html body.perf-lite .context-menu.context-menu {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .25) !important;
+}
+
+/* Авто-лёгкий режим: системная настройка «уменьшить движение».
+   Не сохраняется в settings — работает чисто через CSS. */
+@media (prefers-reduced-motion: reduce) {
+  html body *,
+  html body *::before,
+  html body *::after,
+  html body {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

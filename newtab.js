@@ -46,6 +46,7 @@ const el = {
   visibleBookmarksField: document.getElementById("visibleBookmarksField"),
   shortenTitlesField: document.getElementById("shortenTitlesField"),
   animationsField: document.getElementById("animationsField"),
+  performanceLiteField: document.getElementById("performanceLiteField"),
 
   settingsDialog: document.getElementById("settingsDialog"),
   wallpapersGrid: document.getElementById("wallpapersGrid"),
@@ -146,6 +147,8 @@ const I18N = {
     shortenTitlesDesc: "Показывает длинные названия в одну строку с многоточием",
     animations: "Плавные анимации",
     animationsDesc: "Мягкие переходы и появление элементов (уважает системную настройку «уменьшить движение»)",
+    performanceLite: "Лёгкий режим",
+    performanceLiteDesc: "Отключает размытие фона (blur) для экономии GPU и заряда батареи",
     dark: "Тёмная",
     light: "Светлая",
     yourWallpapers: "Ваши фоны",
@@ -226,6 +229,8 @@ const I18N = {
     shortenTitlesDesc: "Show titles on one line with ellipsis",
     animations: "Smooth animations",
     animationsDesc: "Soft transitions and element reveals (respects the system “reduce motion” setting)",
+    performanceLite: "Lite mode",
+    performanceLiteDesc: "Disables background blur to save GPU and battery",
     dark: "Dark",
     light: "Light",
     starterWallpapers: "Starter wallpapers",
@@ -631,6 +636,7 @@ async function applySettings() {
   document.body.classList.toggle("group-tools", settings.groupTools === true);
   document.body.classList.toggle("shorten-titles", settings.shortenTitles !== false);
   document.body.classList.toggle("anim-enabled", settings.animations !== false);
+  document.body.classList.toggle("perf-lite", settings.performanceLite === true);
 
   const accent = settings.primaryColor || settings.accent || (isLight ? "#7E8584" : "#D49A57");
   const accentText = hexLuminance(accent) > 155 ? "#151815" : "#ffffff";
@@ -2369,6 +2375,7 @@ function openGeneralSettings() {
   el.visibleBookmarksField.value = String(state.settings.visibleBookmarks || 10);
   el.shortenTitlesField.checked = state.settings.shortenTitles !== false;
   if (el.animationsField) el.animationsField.checked = state.settings.animations !== false;
+  if (el.performanceLiteField) el.performanceLiteField.checked = state.settings.performanceLite === true;
   updateSyncStatusUI();
   el.generalSettingsDialog.showModal();
 }
@@ -2383,6 +2390,7 @@ async function saveGeneralSettings(event) {
   state.settings.visibleBookmarks = Number(el.visibleBookmarksField.value) || 10;
   state.settings.shortenTitles = el.shortenTitlesField.checked;
   if (el.animationsField) state.settings.animations = el.animationsField.checked;
+  if (el.performanceLiteField) state.settings.performanceLite = el.performanceLiteField.checked;
 
   await persist();
   await applySettings();
