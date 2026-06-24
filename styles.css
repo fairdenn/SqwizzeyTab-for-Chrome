@@ -16734,6 +16734,14 @@ body.light .context-menu.context-menu {
   transform: translateY(-1px) !important;
   display: inline-block !important;
 }
+/* v2.9.94: попиксельный анализ (scale 14) показал ink-центр «Home» на -1.57px
+   выше центра пилюли при translateY(-1px). translateY(0.5px) выводит ink-центр
+   ровно по оптическому центру кнопки (остаток <0.1px). Перебиваем тем же
+   уровнем спец. (0,5,0) ниже по файлу — финальный мастер-фикс в конце. */
+#pagesNav .page-pill-wrap.page-pill-wrap .page-title.page-title.page-title,
+#pagesNav .page-pill.page-pill .page-title.page-title.page-title {
+  transform: translateY(0.5px) !important;
+}
 
 /* ====================================================
    SQWIZZEY COLLAPSE «Ваши фоны» v2.9.87
@@ -16808,3 +16816,89 @@ body.light *::-webkit-scrollbar-thumb { background: rgba(18, 24, 26, .22) !impor
 body.light *::-webkit-scrollbar-thumb:hover { background: rgba(18, 24, 26, .34) !important; }
 * { scrollbar-width: thin !important; scrollbar-color: rgba(255,255,255,.18) transparent !important; }
 body.light * { scrollbar-color: rgba(18,24,26,.24) transparent !important; }
+
+/* ====================================================
+   SQWIZZEY WALLPAPER-ADJUST BUTTONS v2.9.91
+   Кнопки «Сбросить» (ghost) и «Готово» (primary) были разного размера.
+   Выравниваем к одному размеру.
+   ==================================================== */
+#wallpaperAdjustDialog menu {
+  display: flex !important;
+  gap: 10px !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+}
+#wallpaperAdjustDialog menu .btn {
+  min-width: 120px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  padding: 0 18px !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+/* ====================================================
+   SQWIZZEY SCROLLBAR-INSIDE-ROUNDED-CARD FIX v2.9.92
+   Проблема: .dialog-card имеет overflow:auto + border-radius:20px.
+   Скроллбар браузера рендерится по внешнему краю карточки и в углах
+   ТОРЧИТ за скруглённую рамку (border-radius:20px). Видно только в
+   headful Chrome (реальный композит). Окно «Стиль» (#settingsDialog)
+   самое длинное — там особенно бросается в глаза.
+   Решение: переносим прокрутку с самой скруглённой карточки на
+   ВНУТРЕННИЙ контейнер .dialog-scroll (добавлен в newtab.html), а
+   карточку делаем overflow:hidden, чтобы её border-radius чисто обрезал
+   содержимое вместе со скроллбаром. Внутренний скроллер получает отступы
+   карточки + padding-right, поэтому скроллбар уходит ВНУТРЬ рамки и не
+   залезает на скруглённые углы. JS не трогаем — все элементы по id.
+   ==================================================== */
+#settingsDialog .dialog-card.style-dialog {
+  overflow: hidden !important;            /* скругление чисто обрезает скроллбар */
+  scrollbar-gutter: auto !important;
+  padding: 0 !important;                  /* отступы переезжают на .dialog-scroll */
+}
+#settingsDialog .dialog-card.style-dialog > .dialog-scroll {
+  max-height: inherit;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  /* верт. паддинги держат трек подальше от скруглённых углов карточки,
+     правый паддинг отодвигает скроллбар внутрь от правой рамки */
+  padding: 22px 14px 22px 24px !important;
+  box-sizing: border-box !important;
+}
+/* трек скроллбара внутреннего скроллера не доезжает до скруглённых углов */
+#settingsDialog .dialog-card.style-dialog > .dialog-scroll::-webkit-scrollbar-track {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+  background: transparent !important;
+}
+
+/* ====================================================
+   SQWIZZEY GENERAL-DIALOG SCROLLBAR-INSIDE-ROUNDED FIX v2.9.94
+   Близнец фикса settingsDialog. #generalSettingsDialog .dialog-card.general-dialog
+   скроллилась сама (overflow:auto + border-radius:20px) → нативный скроллбар
+   торчал за скруглённую рамку и резал нижний-правый угол (видно только headful).
+   Переносим прокрутку на внутренний .dialog-scroll (добавлен в newtab.html),
+   карточку делаем overflow:hidden — её border-radius чисто обрезает содержимое
+   и скроллбар уходит ВНУТРЬ рамки. JS не трогаем — все элементы по id.
+   ==================================================== */
+#generalSettingsDialog .dialog-card.general-dialog {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+  padding: 0 !important;
+}
+#generalSettingsDialog .dialog-card.general-dialog > .dialog-scroll {
+  max-height: inherit;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 24px 14px 24px 24px !important;
+  box-sizing: border-box !important;
+}
+#generalSettingsDialog .dialog-card.general-dialog > .dialog-scroll::-webkit-scrollbar-track {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+  background: transparent !important;
+}

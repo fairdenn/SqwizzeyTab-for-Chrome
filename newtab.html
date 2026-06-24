@@ -88,6 +88,7 @@
 
     <dialog id="generalSettingsDialog">
       <form method="dialog" class="dialog-card general-dialog">
+        <div class="dialog-scroll">
         <div class="dialog-head compact-head">
           <div>
             <h3 data-i18n="generalSettings">Основные настройки</h3>
@@ -184,11 +185,13 @@
           <button value="cancel" class="btn ghost"><span data-i18n="cancel">Отмена</span></button>
           <button id="saveGeneralSettingsBtn" type="button" class="btn primary"><span data-i18n="save">Сохранить</span></button>
         </menu>
+        </div>
       </form>
     </dialog>
 
     <dialog id="settingsDialog">
       <form method="dialog" class="dialog-card style-dialog">
+        <div class="dialog-scroll">
         <h3 data-i18n="style">Стиль</h3>
 
         <div class="segmented">
@@ -256,6 +259,7 @@
         </label>
 
         <div class="style-autosave-note" data-i18n="styleAutosave">Изменения применяются автоматически</div>
+        </div>
       </form>
     </dialog>
 
