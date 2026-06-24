@@ -1239,9 +1239,9 @@ document.addEventListener("error", event => {
   if (!img.classList?.contains("favicon")) return;
   img.classList.remove("favicon-loading");
 
-  if (img.dataset.faviconStage !== "chrome" && img.dataset.chromeSrc) {
-    img.dataset.faviconStage = "chrome";
-    img.src = img.dataset.chromeSrc;
+  if (img.dataset.faviconStage !== "google" && img.dataset.faviconStage !== "duck" && img.dataset.googleSrc) {
+    img.dataset.faviconStage = "google";
+    img.src = img.dataset.googleSrc;
     return;
   }
 

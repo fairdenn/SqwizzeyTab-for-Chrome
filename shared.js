@@ -145,7 +145,7 @@ function duckFaviconUrl(url) {
 }
 
 function faviconAttrs(url) {
-  return `src="${googleFaviconUrl(url, 32)}" data-chrome-src="${extensionFaviconUrl(url, 32)}" data-duck-src="${duckFaviconUrl(url)}" data-fallback="${hostnameLetter(url)}" data-favicon-stage="google"`;
+  return `src="${extensionFaviconUrl(url, 32)}" data-google-src="${googleFaviconUrl(url, 32)}" data-duck-src="${duckFaviconUrl(url)}" data-fallback="${hostnameLetter(url)}" data-favicon-stage="chrome"`;
 }
 
 function normalizeUrl(url) {
