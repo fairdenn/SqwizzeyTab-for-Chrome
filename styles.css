@@ -17072,3 +17072,161 @@ html body.perf-lite .context-menu.context-menu {
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* ////////////////////////////////////////////////////
+   v2.9.98 — аккуратные ползунки (range) под тему.
+   Был override-война: жирная «пилюля» (background-градиент на
+   самом input + border-radius:999px) поверх тонкого нативного
+   трека, плюс --range-progress, который JS никогда не выставляет
+   (заливка замёрзла на дефолте), плюс accent-color → полу-нативный
+   рендер. Итог — толстый синий трек + большой нативный thumb.
+   Мастер-блок в конце: убиваем «пилюлю», строим тонкий 6px трек
+   с заливкой var(--accent) и аккуратный thumb 16px. Высокая
+   специфичность html body + #id перебивает всё выше по файлу.
+//////////////////////////////////////////////////// */
+
+html body #wallpaperAdjustDialog input[type="range"],
+html body #settingsDialog input[type="range"],
+html body .dialog-card input[type="range"],
+html body input[type="range"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100% !important;
+  height: 18px !important;            /* высота = диаметр thumb, чтоб трек по центру */
+  margin: 6px 0 !important;
+  padding: 0 !important;
+  background: transparent !important; /* убиваем жирную «пилюлю» */
+  border: 0 !important;
+  border-radius: 0 !important;
+  filter: none !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  accent-color: var(--accent) !important;
+  --range-fill: rgba(255, 255, 255, .16); /* тёмная тема: остаток трека */
+}
+
+html body.light #wallpaperAdjustDialog input[type="range"],
+html body.light #settingsDialog input[type="range"],
+html body.light .dialog-card input[type="range"],
+html body.light input[type="range"] {
+  --range-fill: rgba(18, 24, 26, .14);   /* светлая тема: остаток трека */
+}
+
+/* Трек: тонкая полоса 6px со скруглением. Заливка до thumb —
+   линейный градиент по --range-progress (его теперь выставляет JS:
+   setRangeProgress). Остаток трека — var(--range-fill). */
+html body #wallpaperAdjustDialog input[type="range"]::-webkit-slider-runnable-track,
+html body #settingsDialog input[type="range"]::-webkit-slider-runnable-track,
+html body .dialog-card input[type="range"]::-webkit-slider-runnable-track,
+html body input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background:
+    linear-gradient(to right,
+      var(--accent) 0%,
+      var(--accent) var(--range-progress, 50%),
+      var(--range-fill) var(--range-progress, 50%),
+      var(--range-fill) 100%) !important;
+  box-shadow: none !important;
+}
+
+/* Светлая тема: те же #id, что и в старых правилах (L3932 и т.п.),
+   чтобы перебить их по специфичности (там сплошной серый #dedbd5,
+   который съедал accent-заливку). */
+html body.light #wallpaperAdjustDialog input[type="range"]::-webkit-slider-runnable-track,
+html body.light #settingsDialog input[type="range"]::-webkit-slider-runnable-track,
+html body.light .dialog-card input[type="range"]::-webkit-slider-runnable-track,
+html body.light input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background:
+    linear-gradient(to right,
+      var(--accent) 0%,
+      var(--accent) var(--range-progress, 50%),
+      var(--range-fill) var(--range-progress, 50%),
+      var(--range-fill) 100%) !important;
+  box-shadow: none !important;
+}
+
+/* Thumb: аккуратный круг 16px, цвет акцента, лёгкая обводка/тень. */
+html body #wallpaperAdjustDialog input[type="range"]::-webkit-slider-thumb,
+html body #settingsDialog input[type="range"]::-webkit-slider-thumb,
+html body .dialog-card input[type="range"]::-webkit-slider-thumb,
+html body input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-top: -5px !important;           /* (6px трек - 16px thumb)/2 = -5px */
+  border-radius: 999px !important;
+  background: var(--accent) !important;
+  border: 2px solid rgba(255, 255, 255, .92) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, .35),
+    0 0 0 1px rgba(0, 0, 0, .08) !important;
+  transition: transform .12s ease, box-shadow .12s ease !important;
+}
+
+html body.light #wallpaperAdjustDialog input[type="range"]::-webkit-slider-thumb,
+html body.light #settingsDialog input[type="range"]::-webkit-slider-thumb,
+html body.light .dialog-card input[type="range"]::-webkit-slider-thumb,
+html body.light input[type="range"]::-webkit-slider-thumb {
+  border-color: #ffffff !important;
+  box-shadow:
+    0 1px 3px rgba(18, 24, 26, .22),
+    0 0 0 1px rgba(18, 24, 26, .06) !important;
+}
+
+/* Hover / active: thumb чуть крупнее + мягкое гало акцента. */
+html body input[type="range"]:hover::-webkit-slider-thumb,
+html body .dialog-card input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.12) !important;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, .38),
+    0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent) !important;
+}
+
+html body input[type="range"]:active::-webkit-slider-thumb,
+html body .dialog-card input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.04) !important;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, .42),
+    0 0 0 8px color-mix(in srgb, var(--accent) 28%, transparent) !important;
+}
+
+html body input[type="range"]:focus-visible::-webkit-slider-thumb,
+html body .dialog-card input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, .38),
+    0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+
+html body input[type="range"]:focus,
+html body .dialog-card input[type="range"]:focus {
+  outline: none !important;
+}
+
+/* Firefox-эквиваленты (на всякий случай). */
+html body input[type="range"]::-moz-range-track {
+  height: 6px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: var(--range-fill) !important;
+}
+
+html body input[type="range"]::-moz-range-progress {
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: var(--accent) !important;
+}
+
+html body input[type="range"]::-moz-range-thumb {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 999px !important;
+  background: var(--accent) !important;
+  border: 2px solid rgba(255, 255, 255, .92) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .35) !important;
+}

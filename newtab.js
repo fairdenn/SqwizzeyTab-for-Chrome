@@ -404,6 +404,7 @@ async function init() {
   await applySettings();
   applyI18n();
   bindEvents();
+  syncRangeProgress();
   preloadFaviconsOnce();
   renderAll();
   // Одноразовое мягкое появление досок при загрузке (CSS снимет дёрганье при обычных ре-рендерах).
@@ -413,7 +414,29 @@ async function init() {
   await maybeOpenImportOnboarding();
 }
 
+// Заливка range-слайдеров до thumb. CSS-трек читает --range-progress;
+// без этого заливка замерзала на 50% (JS его раньше не выставлял).
+function setRangeProgress(input) {
+  if (!input || input.type !== "range") return;
+  const min = Number(input.min) || 0;
+  const max = Number(input.max);
+  const span = (Number.isFinite(max) ? max : 100) - min;
+  const val = Number(input.value);
+  const pct = span > 0 ? ((val - min) / span) * 100 : 0;
+  input.style.setProperty("--range-progress", `${Math.max(0, Math.min(100, pct))}%`);
+}
+
+function syncRangeProgress() {
+  document.querySelectorAll('input[type="range"]').forEach(setRangeProgress);
+}
+
 function bindEvents() {
+  // Любое движение любого слайдера — пересчитать заливку до thumb.
+  document.addEventListener("input", (e) => {
+    if (e.target && e.target.matches && e.target.matches('input[type="range"]')) {
+      setRangeProgress(e.target);
+    }
+  });
   document.getElementById("addPageBtn").addEventListener("click", () => openPageDialog(null, false));
   document.getElementById("focusSearchBtn").addEventListener("click", () => el.searchInput.focus());
   document.getElementById("importBookmarksBtn").addEventListener("click", () => openImportDialog(false));
@@ -492,9 +515,7 @@ function bindEvents() {
   el.menuLayer.addEventListener("click", event => {
     if (event.target === el.menuLayer) closeMenu();
   });
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeMenu();
-  });
+  document.addEventListener("keydown", handleGlobalHotkeys);
   document.addEventListener("click", event => {
     if (!event.target.closest(".context-menu") && !event.target.closest("[data-menu-trigger]")) {
       closeMenu();
@@ -2182,6 +2203,7 @@ function syncAdjustFields() {
   el.boardOpacityText.textContent = `${opacity}%`;
   el.boardBlurField.value = String(blur);
   el.boardBlurText.textContent = `${blur}px`;
+  syncRangeProgress();
 }
 
 async function pickColor(target) {
