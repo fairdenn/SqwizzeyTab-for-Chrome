@@ -295,6 +295,16 @@ function t(key) {
   return I18N[lang]?.[key] || I18N.ru[key] || key;
 }
 
+// Склонение «закладка/закладки/закладок» по числу (RU) + EN singular/plural.
+function bookmarksLabel(n) {
+  const lang = state?.settings?.language || "ru";
+  if (lang === "en") return n === 1 ? "bookmark" : "bookmarks";
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "закладка";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "закладки";
+  return "закладок";
+}
+
 function applyI18n() {
   document.documentElement.lang = state.settings.language || "ru";
   document.querySelectorAll("[data-i18n]").forEach(node => {
@@ -1828,7 +1838,7 @@ function renderImportFolders(folders) {
       <input type="checkbox" value="${escapeAttr(folder.id)}" checked />
       <span class="import-check"></span>
       <span class="import-folder-title">${escapeHtml(folder.title)}</span>
-      <span class="import-folder-count">${folder.count} ${t("bookmarksCount")}</span>
+      <span class="import-folder-count">${folder.count} ${bookmarksLabel(folder.count)}</span>
     </label>
   `).join("");
 

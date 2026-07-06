@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Sqwizzey Tab",
   "description": "A new-tab replacement — a visual bookmark manager with boards, pages, drag-and-drop and live Chrome bookmark-folder sync.",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
