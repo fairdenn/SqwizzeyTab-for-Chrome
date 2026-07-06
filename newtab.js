@@ -2152,6 +2152,7 @@ function bindWallpaperStyleEvents() {
   });
 
   setupDialogLightDismiss(el.wallpaperAdjustDialog);
+  setupDialogLightDismiss(el.settingsDialog);
   setupStylePopoverLightDismiss();
 }
 
@@ -2452,7 +2453,7 @@ async function openSettings() {
   await renderWallpaperCards();
   syncAdjustFields();
 
-  if (!el.settingsDialog.open) el.settingsDialog.show();
+  if (!el.settingsDialog.open) el.settingsDialog.showModal();
 }
 
 function setThemeChoice(theme, preview = true) {
