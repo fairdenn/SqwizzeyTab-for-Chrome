@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Sqwizzey Tab",
-  "description": "Bookmark manager new tab with Chrome bookmark folder sync.",
+  "description": "A new-tab replacement — a visual bookmark manager with boards, pages, drag-and-drop and live Chrome bookmark-folder sync.",
   "version": "2.9.99",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
   "action": {
-    "default_title": "Daniil Start",
+    "default_title": "Sqwizzey Tab",
     "default_popup": "popup.html"
   },
   "permissions": [
